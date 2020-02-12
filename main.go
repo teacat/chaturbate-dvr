@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/grafov/m3u8"
 	"github.com/parnurzeal/gorequest"
+	"github.com/urfave/cli"
 )
 
 // chaturbateURL is the base url of the website.
@@ -32,7 +34,8 @@ var bucket []string
 
 //
 var (
-	errInternal = errors.New("err")
+	errInternal   = errors.New("err")
+	errNoUsername = errors.New("chaturbate-dvr: channel username required with `-u [username]` argument")
 )
 
 // roomDossier is the struct to parse the HLS source from the content body.
@@ -98,7 +101,13 @@ func parseHLSSource(url string, baseURL string) string {
 
 //
 func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err error) {
-	_, body, _ := gorequest.New().Get(url).End()
+	resp, body, errs := gorequest.New().Get(url).End()
+	if len(errs) > 0 {
+		return nil, 3, errInternal
+	}
+	if resp.StatusCode == http.StatusForbidden {
+		return nil, 3, errInternal
+	}
 
 	//
 	p, listType, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
@@ -107,7 +116,7 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 	}
 
 	media := p.(*m3u8.MediaPlaylist)
-	wait = media.TargetDuration
+	wait = media.TargetDuration / 2
 
 	// Only fill with the real segments.
 	for _, v := range media.Segments {
@@ -125,14 +134,16 @@ func start(username string) {
 	for {
 		// Check again after a while if the user is currently not online.
 		if !getOnlineStatus(username) {
-			log.Printf("%s is not online, check again after 3 minutes...", username)
-			<-time.After(time.Minute * 3)
+			log.Printf("%s is offlined, check again after 1 minutes...", username)
+			<-time.After(time.Minute * 1)
+			start(username)
+			return
 		}
 
 		log.Printf("%s is online! Fetching the stream...", username)
 
 		// Define the video filename by current time.
-		filename := time.Now().String() + ".mp4"
+		filename := time.Now().String() + ".ts"
 		// Get the channel page content body.
 		body := getBody(username)
 		// Get the master playlist URL from extracting the channel body.
@@ -144,7 +155,16 @@ func start(username string) {
 		if err != nil {
 			panic(err)
 		}
-		defer f.Close()
+		defer func() {
+			for {
+				if len(buffer) == 0 {
+					f.Close()
+					return
+				}
+				log.Printf("Waiting for the buffer to be cleaned...")
+				<-time.After(2 * time.Second)
+			}
+		}()
 
 		go comsumer(f, baseURL)
 
@@ -163,9 +183,13 @@ func start(username string) {
 					//
 					retriesAfterOnlined++
 					// Wait to fetch the next playlist.
-					<-time.After(time.Duration(wait) * time.Second)
+					<-time.After(time.Duration(wait*1000) * time.Millisecond)
 					continue
 				}
+			}
+			if retriesAfterOnlined != 0 {
+				log.Printf("%s is backed online!", username)
+				retriesAfterOnlined = 0
 			}
 			for _, v := range chunks {
 				var ignore bool
@@ -182,13 +206,7 @@ func start(username string) {
 				log.Printf("%s (%d in buffer)", v.URI, len(buffer))
 				buffer <- v
 			}
-			//
-			//buffer = append(buffer, chunks...)
-			//log.Printf("Storing chunks.")
-			// Append the chunks to the video file.
-			//appendChunks(f, baseURL, chunks)
-			// Wait to fetch the next playlist.
-			<-time.After(time.Duration(wait) * time.Second)
+			<-time.After(time.Duration(wait*1000) * time.Millisecond)
 		}
 	}
 }
@@ -204,21 +222,34 @@ func comsumer(file *os.File, baseURL string) {
 	}
 }
 
-// appendChunks appends the streaming chunks data into a single video file.
-//func appendChunks(file *os.File, baseURL string, chunks []*m3u8.MediaSegment) {
-//	for _, v := range chunks {
-//		_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, v.URI)).EndBytes()
-//
-//		log.Println(v.URI)
-//
-//		if _, err := file.Write(body); err != nil {
-//			panic(err)
-//		}
-//	}
-//}
-
 func main() {
-	username := "yesonee"
-
-	start(username)
+	app := &cli.App{
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "username",
+				Aliases: []string{"u"},
+				Value:   "",
+				Usage:   "channel username to watching",
+			},
+			&cli.StringFlag{
+				Name:    "quality",
+				Aliases: []string{"q"},
+				Value:   "",
+				Usage:   "video quality with `high`, `medium` and `low`",
+			},
+		},
+		Name:  "chaturbate-dvr",
+		Usage: "watching a specified chaturbate channel and auto saved to local file",
+		Action: func(c *cli.Context) error {
+			if c.String("username") == "" {
+				log.Fatal(errNoUsername)
+			}
+			start(c.String("username"))
+			return nil
+		},
+	}
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
