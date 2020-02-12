@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/teacat/pathx"
 
 	"github.com/grafov/m3u8"
 	"github.com/parnurzeal/gorequest"
@@ -27,10 +30,13 @@ var retriesAfterOnlined = 0
 var lastCheckOnline = time.Now()
 
 // buffer stores the media segments and wait for comsume.
-var buffer = make(chan *m3u8.MediaSegment, 999999)
+var buffer = make(chan *m3u8.MediaSegment)
 
 //
 var bucket []string
+
+//
+var segmentIndex int
 
 //
 var (
@@ -131,7 +137,7 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 // capture captures the specified channel streaming.
 func capture(username string) {
 	// Define the video filename by current time.
-	filename := time.Now().String() + ".ts"
+	filename := time.Now().String()
 	// Get the channel page content body.
 	body := getBody(username)
 	// Get the master playlist URL from extracting the channel body.
@@ -139,22 +145,12 @@ func capture(username string) {
 	// Get the best resolution m3u8 by parsing the HLS source table.
 	m3u8Source := parseHLSSource(hlsSource, baseURL)
 	//
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	f, err := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	if err != nil {
 		panic(err)
 	}
-	/*defer func() {
-		for {
-			if len(buffer) == 0 {
-				f.Close()
-				return
-			}
-			log.Printf("Waiting for the buffer to be purged...")
-			<-time.After(2 * time.Second)
-		}
-	}()*/
 
-	go comsumer(f, baseURL)
+	go comsumer(f, filename, baseURL)
 
 	// Keep fetching the stream chunks until the playlist cannot be accessed after retried x times (which means the channel is offlined).
 	for {
@@ -191,41 +187,44 @@ func capture(username string) {
 				continue
 			}
 			bucket = append(bucket, v.URI[len(v.URI)-10:])
-			log.Printf("%s (%d in buffer)", v.URI, len(buffer))
-			buffer <- v
+			segmentIndex++
+			go fetchSegment(f, v, baseURL, filename, segmentIndex)
 		}
 		<-time.After(time.Duration(wait*1000) * time.Millisecond)
 	}
 }
 
-// comsumer
-func comsumer(file *os.File, baseURL string) {
-	for {
-		v := <-buffer
-		var retry int
-		var body []byte
-		var errs []error
-		for {
-			if retry > 5 {
-				break
-			}
-			_, body, errs = gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, v.URI)).EndBytes()
-			if len(errs) > 0 {
-				log.Printf("segment fetch failed", v.URI, len(buffer))
-				retry++
-				continue
-			}
-			break
-		}
-		fmt.Printf("GET %s, SIZE: %d\n", v.URI, len(body))
-		if len(body) == 0 {
-			continue
-		}
-
-		if _, err := file.Write(body); err != nil {
-			panic(err)
-		}
+//
+func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, filename string, index int) {
+	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
+	fmt.Printf("GET %s, SIZE: %d\n", segment.URI, len(body))
+	if len(body) == 0 {
+		return
 	}
+	//
+	f, err := os.OpenFile(fmt.Sprintf("%s~%d.ts", filename, index), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	if err != nil {
+		panic(err)
+	}
+	if _, err := f.Write(body); err != nil {
+		panic(err)
+	}
+	//
+	var retry int
+	for {
+		if !pathx.Exists(fmt.Sprintf("%s~%d.ts", filename, index-1)) && retry < 3 {
+			retry++
+			<-time.After(1 * time.Second)
+		}
+		break
+	}
+	//
+	b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index-1))
+	if _, err := master.Write(b); err != nil {
+		panic(err)
+	}
+	//
+	os.Remove(fmt.Sprintf("%s~%d.ts", filename, index-1))
 }
 
 // endpoint implements the application main function endpoint.
