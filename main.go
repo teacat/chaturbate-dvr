@@ -150,8 +150,6 @@ func capture(username string) {
 		panic(err)
 	}
 
-	go comsumer(f, filename, baseURL)
-
 	// Keep fetching the stream chunks until the playlist cannot be accessed after retried x times (which means the channel is offlined).
 	for {
 		// Get the chunks.
