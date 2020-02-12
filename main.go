@@ -116,7 +116,7 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 	}
 
 	media := p.(*m3u8.MediaPlaylist)
-	wait = media.TargetDuration / 2
+	wait = media.TargetDuration / 1.5
 
 	// Only fill with the real segments.
 	for _, v := range media.Segments {
@@ -128,98 +128,122 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 	return
 }
 
-//
-func start(username string) {
+// capture captures the specified channel streaming.
+func capture(username string) {
+	// Define the video filename by current time.
+	filename := time.Now().String() + ".ts"
+	// Get the channel page content body.
+	body := getBody(username)
+	// Get the master playlist URL from extracting the channel body.
+	hlsSource, baseURL := getHLSSource(body)
+	// Get the best resolution m3u8 by parsing the HLS source table.
+	m3u8Source := parseHLSSource(hlsSource, baseURL)
 	//
-	for {
-		// Check again after a while if the user is currently not online.
-		if !getOnlineStatus(username) {
-			log.Printf("%s is offlined, check again after 1 minutes...", username)
-			<-time.After(time.Minute * 1)
-			start(username)
-			return
-		}
-
-		log.Printf("%s is online! Fetching the stream...", username)
-
-		// Define the video filename by current time.
-		filename := time.Now().String() + ".ts"
-		// Get the channel page content body.
-		body := getBody(username)
-		// Get the master playlist URL from extracting the channel body.
-		hlsSource, baseURL := getHLSSource(body)
-		// Get the best resolution m3u8 by parsing the HLS source table.
-		m3u8Source := parseHLSSource(hlsSource, baseURL)
-		//
-		f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
-		if err != nil {
-			panic(err)
-		}
-		defer func() {
-			for {
-				if len(buffer) == 0 {
-					f.Close()
-					return
-				}
-				log.Printf("Waiting for the buffer to be cleaned...")
-				<-time.After(2 * time.Second)
-			}
-		}()
-
-		go comsumer(f, baseURL)
-
-		// Keep fetching the stream chunks until the playlist cannot be accessed after retried x times (which means the channel is offlined).
+	f, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	if err != nil {
+		panic(err)
+	}
+	/*defer func() {
 		for {
-			// Get the chunks.
-			chunks, wait, err := parseM3U8Source(m3u8Source)
-			//
-			if err != nil {
-				if retriesAfterOnlined > 10 {
-					log.Printf("Failed to fetch the video segments after retried, %s might be offlined.", username)
-					retriesAfterOnlined = 0
-					break
-				} else {
-					log.Printf("Failed to fetch the video segments, will try again. (%d/10)", retriesAfterOnlined)
-					//
-					retriesAfterOnlined++
-					// Wait to fetch the next playlist.
-					<-time.After(time.Duration(wait*1000) * time.Millisecond)
-					continue
-				}
+			if len(buffer) == 0 {
+				f.Close()
+				return
 			}
-			if retriesAfterOnlined != 0 {
-				log.Printf("%s is backed online!", username)
-				retriesAfterOnlined = 0
-			}
-			for _, v := range chunks {
-				var ignore bool
-				for _, j := range bucket {
-					if v.URI[len(v.URI)-10:] == j {
-						ignore = true
-						break
-					}
-				}
-				if ignore {
-					continue
-				}
-				bucket = append(bucket, v.URI[len(v.URI)-10:])
-				log.Printf("%s (%d in buffer)", v.URI, len(buffer))
-				buffer <- v
-			}
-			<-time.After(time.Duration(wait*1000) * time.Millisecond)
+			log.Printf("Waiting for the buffer to be purged...")
+			<-time.After(2 * time.Second)
 		}
+	}()*/
+
+	go comsumer(f, baseURL)
+
+	// Keep fetching the stream chunks until the playlist cannot be accessed after retried x times (which means the channel is offlined).
+	for {
+		// Get the chunks.
+		chunks, wait, err := parseM3U8Source(m3u8Source)
+		//
+		if err != nil {
+			if retriesAfterOnlined > 10 {
+				log.Printf("Failed to fetch the video segments after retried, %s might be offlined.", username)
+				retriesAfterOnlined = 0
+				break
+			} else {
+				log.Printf("Failed to fetch the video segments, will try again. (%d/10)", retriesAfterOnlined)
+				//
+				retriesAfterOnlined++
+				// Wait to fetch the next playlist.
+				<-time.After(time.Duration(wait*1000) * time.Millisecond)
+				continue
+			}
+		}
+		if retriesAfterOnlined != 0 {
+			log.Printf("%s is backed online!", username)
+			retriesAfterOnlined = 0
+		}
+		for _, v := range chunks {
+			var ignore bool
+			for _, j := range bucket {
+				if v.URI[len(v.URI)-10:] == j {
+					ignore = true
+					break
+				}
+			}
+			if ignore {
+				continue
+			}
+			bucket = append(bucket, v.URI[len(v.URI)-10:])
+			log.Printf("%s (%d in buffer)", v.URI, len(buffer))
+			buffer <- v
+		}
+		<-time.After(time.Duration(wait*1000) * time.Millisecond)
 	}
 }
 
+// comsumer
 func comsumer(file *os.File, baseURL string) {
 	for {
 		v := <-buffer
-		_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, v.URI)).EndBytes()
+		var retry int
+		var body []byte
+		var errs []error
+		for {
+			if retry > 5 {
+				break
+			}
+			_, body, errs = gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, v.URI)).EndBytes()
+			if len(errs) > 0 {
+				log.Printf("segment fetch failed", v.URI, len(buffer))
+				retry++
+				continue
+			}
+			break
+		}
+		fmt.Printf("GET %s, SIZE: %d\n", v.URI, len(body))
+		if len(body) == 0 {
+			continue
+		}
 
 		if _, err := file.Write(body); err != nil {
 			panic(err)
 		}
 	}
+}
+
+// endpoint implements the application main function endpoint.
+func endpoint(c *cli.Context) error {
+	if c.String("username") == "" {
+		log.Fatal(errNoUsername)
+	}
+	for {
+		// Capture the stream if the user is currently online.
+		if getOnlineStatus(c.String("username")) {
+			capture(c.String("username"))
+			continue
+		}
+		// Otherwise we keep checking the channel status until the user is online.
+		log.Printf("%s is offlined, check again after 1 minutes...", c.String("username"))
+		<-time.After(time.Minute * 1)
+	}
+	return nil
 }
 
 func main() {
@@ -238,15 +262,9 @@ func main() {
 				Usage:   "video quality with `high`, `medium` and `low`",
 			},
 		},
-		Name:  "chaturbate-dvr",
-		Usage: "watching a specified chaturbate channel and auto saved to local file",
-		Action: func(c *cli.Context) error {
-			if c.String("username") == "" {
-				log.Fatal(errNoUsername)
-			}
-			start(c.String("username"))
-			return nil
-		},
+		Name:   "chaturbate-dvr",
+		Usage:  "watching a specified chaturbate channel and auto saved to local file",
+		Action: endpoint,
 	}
 	err := app.Run(os.Args)
 	if err != nil {
