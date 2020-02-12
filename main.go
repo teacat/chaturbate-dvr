@@ -29,13 +29,10 @@ var retriesAfterOnlined = 0
 // lastCheckOnline logs the last check time.
 var lastCheckOnline = time.Now()
 
-// buffer stores the media segments and wait for comsume.
-var buffer = make(chan *m3u8.MediaSegment)
-
-//
+// bucket stores the used segment to prevent fetched the duplicates.
 var bucket []string
 
-//
+// segmentIndex is current stored segment index.
 var segmentIndex int
 
 //
@@ -105,7 +102,7 @@ func parseHLSSource(url string, baseURL string) string {
 	return fmt.Sprintf("%s%s", baseURL, master.Variants[len(master.Variants)-1].URI)
 }
 
-//
+// parseM3U8Source gets the current segment list, the channel might goes offline if 403 was returned.
 func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err error) {
 	resp, body, errs := gorequest.New().Get(url).End()
 	if len(errs) > 0 {
@@ -195,7 +192,7 @@ func capture(username string) {
 //
 func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, filename string, index int) {
 	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
-	fmt.Printf("GET %s, SIZE: %d\n", segment.URI, len(body))
+	log.Printf("GET %s, SIZE: %d\n", segment.URI, len(body))
 	if len(body) == 0 {
 		return
 	}
@@ -233,7 +230,10 @@ func endpoint(c *cli.Context) error {
 	for {
 		// Capture the stream if the user is currently online.
 		if getOnlineStatus(c.String("username")) {
+			log.Printf("%s is online! fetching...", c.String("username"))
 			capture(c.String("username"))
+			segmentIndex = 0
+			bucket = []string{}
 			continue
 		}
 		// Otherwise we keep checking the channel status until the user is online.
