@@ -73,11 +73,11 @@ func getOnlineStatus(username string) bool {
 
 // getHLSSource extracts the playlist url from the room detail page body.
 func getHLSSource(body string) (string, string) {
-	//
+	// Get the room data from the page body.
 	r := regexp.MustCompile(`window\.initialRoomDossier = "(.*?)"`)
 	matches := r.FindAllStringSubmatch(body, -1)
 
-	//
+	// Extract the data and get the HLS source URL.
 	var roomData roomDossier
 	data := unescapeUnicode(matches[0][1])
 	err := json.Unmarshal([]byte(data), &roomData)
@@ -92,12 +92,8 @@ func getHLSSource(body string) (string, string) {
 func parseHLSSource(url string, baseURL string) string {
 	_, body, _ := gorequest.New().Get(url).End()
 
-	//
-	p, listType, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
-	if listType != m3u8.MASTER {
-		return ""
-	}
-
+	// Decode the HLS table.
+	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
 	master := p.(*m3u8.MasterPlaylist)
 	return fmt.Sprintf("%s%s", baseURL, master.Variants[len(master.Variants)-1].URI)
 }
@@ -105,28 +101,21 @@ func parseHLSSource(url string, baseURL string) string {
 // parseM3U8Source gets the current segment list, the channel might goes offline if 403 was returned.
 func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err error) {
 	resp, body, errs := gorequest.New().Get(url).End()
-	if len(errs) > 0 {
-		return nil, 3, errInternal
-	}
-	if resp.StatusCode == http.StatusForbidden {
+	// Retry after 3 seconds if the connection lost or status code returns 403 (the channel might went offline).
+	if len(errs) > 0 || resp.StatusCode == http.StatusForbidden {
 		return nil, 3, errInternal
 	}
 
-	//
-	p, listType, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
-	if listType != m3u8.MEDIA {
-		return nil, 0, errInternal
-	}
-
+	// Decode the segment table.
+	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
 	media := p.(*m3u8.MediaPlaylist)
 	wait = media.TargetDuration / 1.5
 
-	// Only fill with the real segments.
+	// Ignore the empty segments.
 	for _, v := range media.Segments {
-		if v == nil {
-			continue
+		if v != nil {
+			chunks = append(chunks, v)
 		}
-		chunks = append(chunks, v)
 	}
 	return
 }
@@ -141,25 +130,27 @@ func capture(username string) {
 	hlsSource, baseURL := getHLSSource(body)
 	// Get the best resolution m3u8 by parsing the HLS source table.
 	m3u8Source := parseHLSSource(hlsSource, baseURL)
+	// Create the master video file.
+	masterFile, _ := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	//
-	f, err := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
-	if err != nil {
-		panic(err)
-	}
+	log.Printf("the video will be saved as \"%s\".", filename+".ts")
 
-	// Keep fetching the stream chunks until the playlist cannot be accessed after retried x times (which means the channel is offlined).
+	watchStream(m3u8Source, username, masterFile, filename, baseURL)
+}
+
+// watchStream watches the stream and ends if the channel went offline.
+func watchStream(m3u8Source string, username string, masterFile *os.File, filename string, baseURL string) {
+	// Keep fetching the stream chunks until the playlist cannot be accessed after retried x times.
 	for {
 		// Get the chunks.
 		chunks, wait, err := parseM3U8Source(m3u8Source)
-		//
+		// Exit the fetching loop if the channel went offline.
 		if err != nil {
 			if retriesAfterOnlined > 10 {
-				log.Printf("Failed to fetch the video segments after retried, %s might be offlined.", username)
-				retriesAfterOnlined = 0
+				log.Printf("failed to fetch the video segments after retried, %s might went offline.", username)
 				break
 			} else {
-				log.Printf("Failed to fetch the video segments, will try again. (%d/10)", retriesAfterOnlined)
-				//
+				log.Printf("failed to fetch the video segments, will try again. (%d/10)", retriesAfterOnlined)
 				retriesAfterOnlined++
 				// Wait to fetch the next playlist.
 				<-time.After(time.Duration(wait*1000) * time.Millisecond)
@@ -167,32 +158,36 @@ func capture(username string) {
 			}
 		}
 		if retriesAfterOnlined != 0 {
-			log.Printf("%s is backed online!", username)
+			log.Printf("%s is back online!", username)
 			retriesAfterOnlined = 0
 		}
 		for _, v := range chunks {
-			var ignore bool
-			for _, j := range bucket {
-				if v.URI[len(v.URI)-10:] == j {
-					ignore = true
-					break
-				}
-			}
-			if ignore {
+			// Ignore the duplicated chunks.
+			if isDuplicateSegment(v.URI) {
 				continue
 			}
-			bucket = append(bucket, v.URI[len(v.URI)-10:])
 			segmentIndex++
-			go fetchSegment(f, v, baseURL, filename, segmentIndex)
+			go fetchSegment(masterFile, v, baseURL, filename, segmentIndex)
 		}
 		<-time.After(time.Duration(wait*1000) * time.Millisecond)
 	}
 }
 
-//
+// isDuplicateSegment returns true if the segment is already been fetched.
+func isDuplicateSegment(URI string) bool {
+	for _, v := range bucket {
+		if URI[len(URI)-10:] == v {
+			return true
+		}
+	}
+	bucket = append(bucket, URI[len(URI)-10:])
+	return false
+}
+
+// fetchSegment fetches the segment and append to the master file.
 func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, filename string, index int) {
 	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
-	log.Printf("GET %s, SIZE: %d\n", segment.URI, len(body))
+	log.Printf("fetching %s (size: %d)\n", segment.URI, len(body))
 	if len(body) == 0 {
 		return
 	}
@@ -256,10 +251,11 @@ func endpoint(c *cli.Context) error {
 			capture(c.String("username"))
 			segmentIndex = 0
 			bucket = []string{}
+			retriesAfterOnlined = 0
 			continue
 		}
 		// Otherwise we keep checking the channel status until the user is online.
-		log.Printf("%s is offlined, check again after %d minutes...", c.String("username"), c.Int("interval"))
+		log.Printf("%s is not online, check again after %d minute(s)...", c.String("username"), c.Int("interval"))
 		<-time.After(time.Minute * time.Duration(c.Int("interval")))
 	}
 	return nil
@@ -274,12 +270,12 @@ func main() {
 				Value:   "",
 				Usage:   "channel username to watching",
 			},
-			&cli.StringFlag{
-				Name:    "quality",
-				Aliases: []string{"q"},
-				Value:   "",
-				Usage:   "video quality with `high`, `medium` and `low`",
-			},
+			// s&cli.StringFlag{
+			// s	Name:    "quality",
+			// s	Aliases: []string{"q"},
+			// s	Value:   "",
+			// s	Usage:   "video quality with `high`, `medium` and `low`",
+			// s},
 			&cli.IntFlag{
 				Name:    "interval",
 				Aliases: []string{"i"},
