@@ -270,12 +270,6 @@ func main() {
 				Value:   "",
 				Usage:   "channel username to watching",
 			},
-			// s&cli.StringFlag{
-			// s	Name:    "quality",
-			// s	Aliases: []string{"q"},
-			// s	Value:   "",
-			// s	Usage:   "video quality with `high`, `medium` and `low`",
-			// s},
 			&cli.IntFlag{
 				Name:    "interval",
 				Aliases: []string{"i"},
@@ -284,7 +278,7 @@ func main() {
 			},
 		},
 		Name:   "chaturbate-dvr",
-		Usage:  "watching a specified chaturbate channel and auto saved to local file",
+		Usage:  "watching a specified chaturbate channel and auto saves the stream as local file",
 		Action: endpoint,
 	}
 	err := app.Run(os.Args)

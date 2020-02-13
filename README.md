@@ -33,7 +33,7 @@ Y8888D'    YP    88   YD
 
 ```bash
 NAME:
-   chaturbate-dvr - watching a specified chaturbate channel and auto saved to local file
+   chaturbate-dvr - watching a specified chaturbate channel and auto saves the stream as local file
 
 USAGE:
    main [global options] command [command options] [arguments...]
