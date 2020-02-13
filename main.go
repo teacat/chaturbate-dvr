@@ -194,7 +194,7 @@ func combineSegment(master *os.File, filename string) {
 	for {
 		<-time.After(300 * time.Millisecond)
 
-		if index == segmentIndex {
+		if index >= segmentIndex {
 			<-time.After(1 * time.Second)
 			continue
 		}
