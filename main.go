@@ -214,7 +214,7 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 		break
 	}
 	//
-	if retry > 3 {
+	if retry >= 3 {
 		//
 		b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index))
 		master.Write(b)
@@ -234,6 +234,21 @@ func endpoint(c *cli.Context) error {
 	if c.String("username") == "" {
 		log.Fatal(errNoUsername)
 	}
+
+	fmt.Println(" .o88b. db   db  .d8b.  d888888b db    db d8888b. d8888b.  .d8b.  d888888b d88888b")
+	fmt.Println("d8P  Y8 88   88 d8' `8b `~~88~~' 88    88 88  `8D 88  `8D d8' `8b `~~88~~' 88'")
+	fmt.Println("8P      88ooo88 88ooo88    88    88    88 88oobY' 88oooY' 88ooo88    88    88ooooo")
+	fmt.Println("8b      88~~~88 88~~~88    88    88    88 88`8b   88~~~b. 88~~~88    88    88~~~~~")
+	fmt.Println("Y8b  d8 88   88 88   88    88    88b  d88 88 `88. 88   8D 88   88    88    88.")
+	fmt.Println(" `Y88P' YP   YP YP   YP    YP    ~Y8888P' 88   YD Y8888P' YP   YP    YP    Y88888P")
+	fmt.Println("d8888b. db    db d8888b.")
+	fmt.Println("88  `8D 88    88 88  `8D")
+	fmt.Println("88   88 Y8    8P 88oobY'")
+	fmt.Println("88   88 `8b  d8' 88`8b")
+	fmt.Println("88  .8D  `8bd8'  88 `88.")
+	fmt.Println("Y8888D'    YP    88   YD")
+	fmt.Println("---")
+
 	for {
 		// Capture the stream if the user is currently online.
 		if getOnlineStatus(c.String("username")) {
