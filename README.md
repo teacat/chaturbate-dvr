@@ -29,6 +29,10 @@ Y8888D'    YP    88   YD
 2020/02/13 18:05:22 my_lovely_channel_name is online! fetching...
 2020/02/13 18:05:24 the video will be saved as "2020-02-13 18:05:22.1344318 +0800 CST m=+0.885404701.ts".
 2020/02/13 18:05:28 fetching media_w402018999_b5128000_t64RlBTOjI5Ljk3_9134.ts (size: 936428)
+2020/02/13 19:07:06 failed to fetch the video segments, will try again. (1/2)
+2020/02/13 19:07:06 failed to fetch the video segments, will try again. (2/2)
+2020/02/13 19:07:11 failed to fetch the video segments after retried, my_lovely_channel_name might went offline.
+2020/02/13 19:07:11 my_lovely_channel_name is not online, check again after 3 minute(s)...
 ```
 
 ## Help
