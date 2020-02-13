@@ -192,7 +192,12 @@ func combineSegment(master *os.File, filename string) {
 	<-time.After(4 * time.Second)
 
 	for {
-		<-time.After(800 * time.Millisecond)
+		<-time.After(300 * time.Millisecond)
+
+		if index == segmentIndex {
+			<-time.After(1 * time.Second)
+			continue
+		}
 
 		if !pathx.Exists(fmt.Sprintf("%s~%d.ts", filename, index)) {
 			if retry >= 5 {
@@ -213,7 +218,7 @@ func combineSegment(master *os.File, filename string) {
 		//
 		b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index))
 		master.Write(b)
-		log.Printf("inserting %d segment to the master file.", index)
+		log.Printf("inserting %d segment to the master file. (total: %d)", index, segmentIndex)
 		//
 		os.Remove(fmt.Sprintf("%s~%d.ts", filename, index))
 		//
@@ -226,6 +231,7 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
 	log.Printf("fetching %s (size: %d)\n", segment.URI, len(body))
 	if len(body) == 0 {
+		log.Printf("skipped %s due to the empty body!\n", segment.URI)
 		return
 	}
 	//

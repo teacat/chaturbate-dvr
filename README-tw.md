@@ -76,6 +76,9 @@ failed to fetch the video segments after retried, XXX might went offline.
 cannot find segment XXX, will try again. (1/5)
 無法找到影片段落，燒後會重新嘗試。（1/5）
 
-inserting XXX segment to the master file.
-正在插入片段 XXX 至主要影片檔案。
+inserting XXX segment to the master file. (total: XXX)
+正在插入片段 XXX 至主要影片檔案。（總共：XXX）
+
+skipped XXX due to the empty body!
+跳過 XXX 片段因為其為空白內容！
 ```
