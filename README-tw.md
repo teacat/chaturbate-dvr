@@ -58,18 +58,24 @@ GLOBAL OPTIONS:
 ## 中文對應
 
 ```
-XXXXXX is online! fetching...
-XXXXXX 正在線上！開始撈取實況內容…
+XXX is online! fetching...
+XXX 正在線上！開始撈取實況內容…
 
-the video will be saved as "XXXXXX".
-影片將會被保存為「XXXXXX」。
+the video will be saved as "XXX".
+影片將會被保存為「XXX」。
 
-fetching XXXXXX.ts (size: XXXXXX)
-正在擷取 XXXXXX.ts 片段（大小：XXXXXX）
+fetching XXX.ts (size: XXX)
+正在擷取 XXX.ts 片段（大小：XXX）
 
 failed to fetch the video segments, will try again. (1/2)
 無法取得影片段落，稍後會重新嘗試。(1/2)
 
-failed to fetch the video segments after retried, XXXXXX might went offline.
-無法取得影片段落，XXXXXX 可能已經結束直播了。
+failed to fetch the video segments after retried, XXX might went offline.
+無法取得影片段落，XXX 可能已經結束直播了。
+
+cannot find segment XXX, will try again. (1/5)
+無法找到影片段落，燒後會重新嘗試。（1/5）
+
+inserting XXX segment to the master file.
+正在插入片段 XXX 至主要影片檔案。
 ```

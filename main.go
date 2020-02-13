@@ -123,7 +123,7 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 // capture captures the specified channel streaming.
 func capture(username string) {
 	// Define the video filename by current time.
-	filename := time.Now().String()
+	filename := time.Now().Format("2006-01-02_15-04-05")
 	// Get the channel page content body.
 	body := getBody(username)
 	// Get the master playlist URL from extracting the channel body.
@@ -135,6 +135,7 @@ func capture(username string) {
 	//
 	log.Printf("the video will be saved as \"%s\".", filename+".ts")
 
+	go combineSegment(masterFile, filename)
 	watchStream(m3u8Source, username, masterFile, filename, baseURL)
 }
 
@@ -184,6 +185,42 @@ func isDuplicateSegment(URI string) bool {
 	return false
 }
 
+// combineSegment combines the segments to the master video file in the background.
+func combineSegment(master *os.File, filename string) {
+	index := 1
+	var retry int
+	<-time.After(4 * time.Second)
+
+	for {
+		<-time.After(800 * time.Millisecond)
+
+		if !pathx.Exists(fmt.Sprintf("%s~%d.ts", filename, index)) {
+			if retry >= 5 {
+				index++
+				retry = 0
+				continue
+			}
+			if retry != 0 {
+				log.Printf("cannot find segment %d, will try again. (%d/5)", index, retry)
+			}
+			retry++
+			<-time.After(time.Duration(1*retry) * time.Second)
+			continue
+		}
+		if retry != 0 {
+			retry = 0
+		}
+		//
+		b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index))
+		master.Write(b)
+		log.Printf("inserting %d segment to the master file.", index)
+		//
+		os.Remove(fmt.Sprintf("%s~%d.ts", filename, index))
+		//
+		index++
+	}
+}
+
 // fetchSegment fetches the segment and append to the master file.
 func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, filename string, index int) {
 	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
@@ -199,29 +236,6 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 	if _, err := f.Write(body); err != nil {
 		panic(err)
 	}
-	//
-	var retry int
-	for {
-		if !pathx.Exists(fmt.Sprintf("%s~%d.ts", filename, index-1)) && retry < 3 {
-			retry++
-			<-time.After(1 * time.Second)
-		}
-		break
-	}
-	//
-	if retry >= 3 {
-		//
-		b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index))
-		master.Write(b)
-		//
-		os.Remove(fmt.Sprintf("%s~%d.ts", filename, index))
-		return
-	}
-	//
-	b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index-1))
-	master.Write(b)
-	//
-	os.Remove(fmt.Sprintf("%s~%d.ts", filename, index-1))
 }
 
 // endpoint implements the application main function endpoint.
