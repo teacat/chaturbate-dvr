@@ -1,5 +1,7 @@
 # Chaturbate DVR (Alpha)
 
+[[正體中文翻譯點此]](README-tw.md)
+
 The program watches a specified Chaturbate channel and save the stream in real-time when the channel goes online, so you won't miss anything.
 
 **Warning**: The streaming content on Chaturbate is copyrighted, you should not copy, share, distribute the content. (for more information, check [DMCA](https://www.dmca.com/))
