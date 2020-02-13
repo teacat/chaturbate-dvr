@@ -214,10 +214,17 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 		break
 	}
 	//
-	b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index-1))
-	if _, err := master.Write(b); err != nil {
-		panic(err)
+	if retry > 3 {
+		//
+		b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index))
+		master.Write(b)
+		//
+		os.Remove(fmt.Sprintf("%s~%d.ts", filename, index))
+		return
 	}
+	//
+	b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index-1))
+	master.Write(b)
 	//
 	os.Remove(fmt.Sprintf("%s~%d.ts", filename, index-1))
 }
@@ -237,8 +244,8 @@ func endpoint(c *cli.Context) error {
 			continue
 		}
 		// Otherwise we keep checking the channel status until the user is online.
-		log.Printf("%s is offlined, check again after 1 minutes...", c.String("username"))
-		<-time.After(time.Minute * 1)
+		log.Printf("%s is offlined, check again after %d minutes...", c.String("username"), c.Int("interval"))
+		<-time.After(time.Minute * time.Duration(c.Int("interval")))
 	}
 	return nil
 }
@@ -257,6 +264,12 @@ func main() {
 				Aliases: []string{"q"},
 				Value:   "",
 				Usage:   "video quality with `high`, `medium` and `low`",
+			},
+			&cli.IntFlag{
+				Name:    "interval",
+				Aliases: []string{"i"},
+				Value:   1,
+				Usage:   "minutes to check if a channel goes online or not",
 			},
 		},
 		Name:   "chaturbate-dvr",
