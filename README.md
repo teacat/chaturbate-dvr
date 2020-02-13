@@ -33,6 +33,8 @@ Y8888D'    YP    88   YD
 
 ## Help
 
+The video quality is always the highest as possible, you cannot change it (too lazy to make it as an option).
+
 ```bash
 NAME:
    chaturbate-dvr - watching a specified chaturbate channel and auto saves the stream as local file
