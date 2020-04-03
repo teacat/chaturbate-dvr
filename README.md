@@ -6,7 +6,7 @@ The program watches a specified Chaturbate channel and save the stream in real-t
 
 **Warning**: The streaming content on Chaturbate is copyrighted, you should not copy, share, distribute the content. (for more information, check [DMCA](https://www.dmca.com/))
 
-**Disclaimer**: Due to early development, might have frame drops (20s gone in a 3hr long stream), it still required more tests.
+**Disclaimer**: Due to early development, might have frames dropped (20s gone in a 3hrs long stream), still requires more tests.
 
 ## Usage
 
