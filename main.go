@@ -17,7 +17,7 @@ import (
 
 	"github.com/grafov/m3u8"
 	"github.com/parnurzeal/gorequest"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 // chaturbateURL is the base url of the website.
