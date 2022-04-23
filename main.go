@@ -26,9 +26,6 @@ const chaturbateURL = "https://chaturbate.com/"
 // retriesAfterOnlined tells the retries for stream when disconnected but not really offlined.
 var retriesAfterOnlined = 0
 
-// lastCheckOnline logs the last check time.
-var lastCheckOnline = time.Now()
-
 // bucket stores the used segment to prevent fetched the duplicates.
 var bucket []string
 
