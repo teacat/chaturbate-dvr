@@ -32,6 +32,9 @@ var bucket []string
 // segmentIndex is current stored segment index.
 var segmentIndex int
 
+// path save video
+const savePath = "video"
+
 //
 var (
 	errInternal   = errors.New("err")
@@ -128,9 +131,9 @@ func capture(username string) {
 	// Get the best resolution m3u8 by parsing the HLS source table.
 	m3u8Source := parseHLSSource(hlsSource, baseURL)
 	// Create the master video file.
-	masterFile, _ := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	masterFile, _ := os.OpenFile("./"+savePath+"/"+filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	//
-	log.Printf("the video will be saved as \"%s\".", filename+".ts")
+	log.Printf("the video will be saved as \"./"+savePath+"/%s\".", filename+".ts")
 
 	go combineSegment(masterFile, filename)
 	watchStream(m3u8Source, username, masterFile, filename, baseURL)
@@ -196,7 +199,7 @@ func combineSegment(master *os.File, filename string) {
 			continue
 		}
 
-		if !pathx.Exists(fmt.Sprintf("%s~%d.ts", filename, index)) {
+		if !pathx.Exists(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)) {
 			if retry >= 5 {
 				index++
 				retry = 0
@@ -213,11 +216,11 @@ func combineSegment(master *os.File, filename string) {
 			retry = 0
 		}
 		//
-		b, _ := ioutil.ReadFile(fmt.Sprintf("%s~%d.ts", filename, index))
+		b, _ := ioutil.ReadFile(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
 		master.Write(b)
 		log.Printf("inserting %d segment to the master file. (total: %d)", index, segmentIndex)
 		//
-		os.Remove(fmt.Sprintf("%s~%d.ts", filename, index))
+		os.Remove(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
 		//
 		index++
 	}
@@ -232,7 +235,7 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 		return
 	}
 	//
-	f, err := os.OpenFile(fmt.Sprintf("%s~%d.ts", filename, index), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	f, err := os.OpenFile(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	if err != nil {
 		panic(err)
 	}
@@ -260,6 +263,11 @@ func endpoint(c *cli.Context) error {
 	fmt.Println("88  .8D  `8bd8'  88 `88.")
 	fmt.Println("Y8888D'    YP    88   YD")
 	fmt.Println("---")
+
+	// Mkdir video folder
+	if _, err := os.Stat("./" + savePath); os.IsNotExist(err) {
+		os.Mkdir("./"+savePath, 0777)
+	}
 
 	for {
 		// Capture the stream if the user is currently online.
