@@ -1,0 +1,9 @@
+version: "3.0"
+
+services:
+  chaturbate-dvr:
+    build: .
+    environment:
+      - USERNAME=my_lovely_channel_name
+    volumes:
+      - ./video/my_lovely_channel_name:/usr/src/app/video
