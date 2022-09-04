@@ -122,8 +122,8 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 
 // capture captures the specified channel streaming.
 func capture(username string) {
-	// Define the video filename by current time.
-	filename := time.Now().Format("2006-01-02_15-04-05")
+	// Define the video filename by current time //04.09.22 added username into filename mKeey.
+	filename := username + "_" + time.Now().Format("2006-01-02_15-04-05")
 	// Get the channel page content body.
 	body := getBody(username)
 	// Get the master playlist URL from extracting the channel body.
@@ -283,7 +283,6 @@ func endpoint(c *cli.Context) error {
 		log.Printf("%s is not online, check again after %d minute(s)...", c.String("username"), c.Int("interval"))
 		<-time.After(time.Minute * time.Duration(c.Int("interval")))
 	}
-	return nil
 }
 
 func main() {
