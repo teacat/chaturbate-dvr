@@ -283,7 +283,6 @@ func endpoint(c *cli.Context) error {
 		log.Printf("%s is not online, check again after %d minute(s)...", c.String("username"), c.Int("interval"))
 		<-time.After(time.Minute * time.Duration(c.Int("interval")))
 	}
-	return nil
 }
 
 func main() {
