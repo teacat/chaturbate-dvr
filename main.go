@@ -122,7 +122,7 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 
 // capture captures the specified channel streaming.
 func capture(username string) {
-	// Define the video filename by current time //04.09.22 added username into filename mKeey.
+	// Define the video filename by current time //04.09.22 added username into filename mK33y.
 	filename := username + "_" + time.Now().Format("2006-01-02_15-04-05")
 	// Get the channel page content body.
 	body := getBody(username)
@@ -186,8 +186,11 @@ func isDuplicateSegment(URI string) bool {
 }
 
 // combineSegment combines the segments to the master video file in the background.
+// fixed segment problems mK33y.
+// still needs some attention here
 func combineSegment(master *os.File, filename string) {
 	index := 1
+	delete := 1
 	var retry int
 	<-time.After(4 * time.Second)
 
@@ -220,8 +223,11 @@ func combineSegment(master *os.File, filename string) {
 		master.Write(b)
 		log.Printf("inserting %d segment to the master file. (total: %d)", index, segmentIndex)
 		//
-		os.Remove(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
-		//
+		e := os.Remove(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, delete))
+		if e != nil {
+			delete--
+		}
+		delete++
 		index++
 	}
 }
