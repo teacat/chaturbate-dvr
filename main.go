@@ -32,10 +32,15 @@ var bucket []string
 // segmentIndex is current stored segment index.
 var segmentIndex int
 
+// stripLimit reprsents the maximum Bytes sizes to split the video into chunks.
+var stripLimit int
+
+// stripQuota represents how many Bytes left til the next video chunk stripping.
+var stripQuota int
+
 // path save video
 const savePath = "video"
 
-//
 var (
 	errInternal   = errors.New("err")
 	errNoUsername = errors.New("chaturbate-dvr: channel username required with `-u [username]` argument")
@@ -191,6 +196,7 @@ func isDuplicateSegment(URI string) bool {
 func combineSegment(master *os.File, filename string) {
 	index := 1
 	delete := 1
+	stripIndex := 1
 	var retry int
 	<-time.After(4 * time.Second)
 
@@ -220,6 +226,14 @@ func combineSegment(master *os.File, filename string) {
 		}
 		//
 		b, _ := ioutil.ReadFile(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
+		//
+		if stripLimit != 0 && stripQuota <= 0 {
+			newMasterFilename := "./" + savePath + "/" + filename + "_" + strconv.Itoa(stripIndex) + ".ts"
+			master, _ = os.OpenFile(newMasterFilename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+			log.Printf("exceeded the specified stripping limit, creating new video file. (file: %s)", newMasterFilename)
+			stripQuota = stripLimit
+			stripIndex++
+		}
 		master.Write(b)
 		log.Printf("inserting %d segment to the master file. (total: %d)", index, segmentIndex)
 		//
@@ -240,6 +254,7 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 		log.Printf("skipped %s due to the empty body!\n", segment.URI)
 		return
 	}
+	stripQuota -= len(body)
 	//
 	f, err := os.OpenFile(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	if err != nil {
@@ -255,6 +270,10 @@ func endpoint(c *cli.Context) error {
 	if c.String("username") == "" {
 		log.Fatal(errNoUsername)
 	}
+	// Converts `strip` from MiB to Bytes
+	stripLimit = c.Int("strip") * 1024 * 1024
+	stripQuota = c.Int("strip") * 1024 * 1024
+	//
 
 	fmt.Println(" .o88b. db   db  .d8b.  d888888b db    db d8888b. d8888b.  .d8b.  d888888b d88888b")
 	fmt.Println("d8P  Y8 88   88 d8' `8b `~~88~~' 88    88 88  `8D 88  `8D d8' `8b `~~88~~' 88'")
@@ -273,6 +292,10 @@ func endpoint(c *cli.Context) error {
 	// Mkdir video folder
 	if _, err := os.Stat("./" + savePath); os.IsNotExist(err) {
 		os.Mkdir("./"+savePath, 0777)
+	}
+	//
+	if c.Int("strip") != 0 {
+		log.Printf("specifying stripping limit as %d MiB(s)", c.Int("strip"))
 	}
 
 	for {
@@ -305,6 +328,12 @@ func main() {
 				Aliases: []string{"i"},
 				Value:   1,
 				Usage:   "minutes to check if a channel goes online or not",
+			},
+			&cli.IntFlag{
+				Name:    "strip",
+				Aliases: []string{"s"},
+				Value:   0,
+				Usage:   "MB sizes to split the video into chunks",
 			},
 		},
 		Name:   "chaturbate-dvr",
