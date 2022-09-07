@@ -52,6 +52,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --username value, -u value  channel username to watching
    --interval value, -i value  minutes to check if a channel goes online or not (default: 1)
+   --strip value, -s value     MB sizes to split the video into chunks (default: 0)
    --help, -h                  show help (default: false)
 ```
 
@@ -81,4 +82,7 @@ inserting XXX segment to the master file. (total: XXX)
 
 skipped XXX due to the empty body!
 跳過 XXX 片段因為其為空白內容！
+
+exceeded the specified stripping limit, creating new video file. (file: XXX)
+達到影片分割上限，建立新的影片檔案（檔名：XXX）
 ```

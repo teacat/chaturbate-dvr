@@ -54,5 +54,6 @@ COMMANDS:
 GLOBAL OPTIONS:
    --username value, -u value  channel username to watching
    --interval value, -i value  minutes to check if a channel goes online or not (default: 1)
+   --strip value, -s value     MB sizes to split the video into chunks (default: 0)
    --help, -h                  show help (default: false)
 ```
