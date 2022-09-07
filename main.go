@@ -113,7 +113,10 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 
 	// Decode the segment table.
 	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
-	media := p.(*m3u8.MediaPlaylist)
+	media, ok := p.(*m3u8.MediaPlaylist)
+	if !ok {
+		return nil, 3, errInternal
+	}
 	wait = media.TargetDuration / 1.5
 
 	// Ignore the empty segments.
