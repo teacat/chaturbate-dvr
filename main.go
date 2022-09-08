@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/TwiN/go-color"
 	"github.com/teacat/pathx"
 
 	"github.com/grafov/m3u8"
@@ -26,8 +27,8 @@ const chaturbateURL = "https://chaturbate.com/"
 // retriesAfterOnlined tells the retries for stream when disconnected but not really offlined.
 var retriesAfterOnlined = 0
 
-// bucket stores the used segment to prevent fetched the duplicates.
-var bucket []string
+// temp stores the used segment to prevent fetched the duplicates.
+var temp []string
 
 // segmentIndex is current stored segment index.
 var segmentIndex int
@@ -41,9 +42,18 @@ var stripQuota int
 // path save video
 const savePath = "video"
 
+// error/message handler
 var (
-	errInternal   = errors.New("err")
-	errNoUsername = errors.New("chaturbate-dvr: channel username required with `-u [username]` argument")
+	errInternal         = errors.New("err")
+	errNoUsername       = errors.New("recording: channel username required `-u [USERNAME]` option")
+	errSegRetFail       = color.Colorize(color.Red, ("[FAILED] to fetch the video segments after retried, %s might went offline or is in ticket/privat show."))
+	errSegRetFailOnline = color.Colorize(color.Red, ("[FAILED] to fetch the video segments, will try again. [%d/10]"))
+	infoIsOnline        = color.Colorize(color.Green, ("[RECORDING] %s is online! start fetching.."))
+	infoBackOnline      = color.Colorize(color.Green, ("[INFO] %s is back online!"))
+	infoMergeSegment    = color.Colorize(color.Green, ("[INFO] inserting %d segment to the master file. [total: %d]"))
+	infoSkipped         = color.Colorize(color.Blue, ("[INFO] skipped %s due to the empty body!\n"))
+	infoNotOnline       = color.Colorize(color.Gray, ("[INFO] %s is not online, check again in %d minute(s)"))
+	warningSegment      = color.Colorize(color.Yellow, ("[WARNING] cannot find segment %d, will try again. [%d/5]"))
 )
 
 // roomDossier is the struct to parse the HLS source from the content body.
@@ -156,10 +166,10 @@ func watchStream(m3u8Source string, username string, masterFile *os.File, filena
 		// Exit the fetching loop if the channel went offline.
 		if err != nil {
 			if retriesAfterOnlined > 10 {
-				log.Printf("failed to fetch the video segments after retried, %s might went offline.", username)
+				log.Printf(errSegRetFail, username)
 				break
 			} else {
-				log.Printf("failed to fetch the video segments, will try again. (%d/10)", retriesAfterOnlined)
+				log.Printf(errSegRetFailOnline, retriesAfterOnlined)
 				retriesAfterOnlined++
 				// Wait to fetch the next playlist.
 				<-time.After(time.Duration(wait*1000) * time.Millisecond)
@@ -167,7 +177,7 @@ func watchStream(m3u8Source string, username string, masterFile *os.File, filena
 			}
 		}
 		if retriesAfterOnlined != 0 {
-			log.Printf("%s is back online!", username)
+			log.Printf(infoBackOnline, username)
 			retriesAfterOnlined = 0
 		}
 		for _, v := range chunks {
@@ -184,12 +194,12 @@ func watchStream(m3u8Source string, username string, masterFile *os.File, filena
 
 // isDuplicateSegment returns true if the segment is already been fetched.
 func isDuplicateSegment(URI string) bool {
-	for _, v := range bucket {
+	for _, v := range temp {
 		if URI[len(URI)-10:] == v {
 			return true
 		}
 	}
-	bucket = append(bucket, URI[len(URI)-10:])
+	temp = append(temp, URI[len(URI)-10:])
 	return false
 }
 
@@ -218,7 +228,7 @@ func combineSegment(master *os.File, filename string) {
 				continue
 			}
 			if retry != 0 {
-				log.Printf("cannot find segment %d, will try again. (%d/5)", index, retry)
+				log.Printf(warningSegment, index, retry)
 			}
 			retry++
 			<-time.After(time.Duration(1*retry) * time.Second)
@@ -238,9 +248,11 @@ func combineSegment(master *os.File, filename string) {
 			stripIndex++
 		}
 		master.Write(b)
-		log.Printf("inserting %d segment to the master file. (total: %d)", index, segmentIndex)
 		//
+		log.Printf(infoMergeSegment, index, segmentIndex)
+
 		e := os.Remove(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, delete))
+		//
 		if e != nil {
 			delete--
 		}
@@ -254,7 +266,7 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
 	log.Printf("fetching %s (size: %d)\n", segment.URI, len(body))
 	if len(body) == 0 {
-		log.Printf("skipped %s due to the empty body!\n", segment.URI)
+		log.Printf(infoSkipped, segment.URI)
 		return
 	}
 	stripQuota -= len(body)
@@ -304,15 +316,15 @@ func endpoint(c *cli.Context) error {
 	for {
 		// Capture the stream if the user is currently online.
 		if getOnlineStatus(c.String("username")) {
-			log.Printf("%s is online! fetching...", c.String("username"))
+			log.Printf(infoIsOnline, c.String("username"))
 			capture(c.String("username"))
 			segmentIndex = 0
-			bucket = []string{}
+			temp = []string{}
 			retriesAfterOnlined = 0
 			continue
 		}
 		// Otherwise we keep checking the channel status until the user is online.
-		log.Printf("%s is not online, check again after %d minute(s)...", c.String("username"), c.Int("interval"))
+		log.Printf(infoNotOnline, c.String("username"), c.Int("interval"))
 		<-time.After(time.Minute * time.Duration(c.Int("interval")))
 	}
 }
