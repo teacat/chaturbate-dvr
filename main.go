@@ -97,6 +97,8 @@ func getHLSSource(body string) (string, string) {
 func parseHLSSource(url string, baseURL string) string {
 	_, body, _ := gorequest.New().Get(url).End()
 
+	<-time.After(time.Millisecond * 300)
+
 	// Decode the HLS table.
 	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
 	master := p.(*m3u8.MasterPlaylist)
