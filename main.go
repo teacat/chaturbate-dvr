@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,7 +13,6 @@ import (
 	"time"
 
 	"github.com/TwiN/go-color"
-	"github.com/teacat/pathx"
 
 	"github.com/grafov/m3u8"
 	"github.com/parnurzeal/gorequest"
@@ -32,6 +30,9 @@ var temp []string
 
 // segmentIndex is current stored segment index.
 var segmentIndex int
+
+// segmentMap is the map stores temporary video segments, it will be merged into master video file then got deleted.
+var segmentMap map[string][]byte = make(map[string][]byte)
 
 // stripLimit reprsents the maximum Bytes sizes to split the video into chunks.
 var stripLimit int
@@ -77,7 +78,10 @@ func getChannelURL(username string) string {
 
 // getBody gets the channel page content body.
 func getBody(username string) string {
-	_, body, _ := gorequest.New().Get(getChannelURL(username)).End()
+	resp, body, _ := gorequest.New().Get(getChannelURL(username)).End()
+	if resp.StatusCode != 200 {
+		return ""
+	}
 	return body
 }
 
@@ -105,13 +109,15 @@ func getHLSSource(body string) (string, string) {
 
 // parseHLSSource parses the HLS table and return the maximum resolution m3u8 source.
 func parseHLSSource(url string, baseURL string) string {
-	_, body, _ := gorequest.New().Get(url).End()
-
-	<-time.After(time.Millisecond * 300)
-
-	// Decode the HLS table.
+	resp, body, _ := gorequest.New().Get(url).End()
+	if resp.StatusCode == 403 {
+		return ""
+	}
 	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
-	master := p.(*m3u8.MasterPlaylist)
+	master, ok := p.(*m3u8.MasterPlaylist)
+	if !ok {
+		return ""
+	}
 	return fmt.Sprintf("%s%s", baseURL, master.Variants[len(master.Variants)-1].URI)
 }
 
@@ -144,12 +150,30 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 func capture(username string) {
 	// Define the video filename by current time //04.09.22 added username into filename mK33y.
 	filename := username + "_" + time.Now().Format("2006-01-02_15-04-05")
-	// Get the channel page content body.
-	body := getBody(username)
-	// Get the master playlist URL from extracting the channel body.
-	hlsSource, baseURL := getHLSSource(body)
-	// Get the best resolution m3u8 by parsing the HLS source table.
-	m3u8Source := parseHLSSource(hlsSource, baseURL)
+	var m3u8Source, baseURL, hlsSource string
+	var tried int
+	for {
+		tried++
+		//
+		if tried > 10 {
+			panic(errors.New("cannot fetch the Playlist correctly after 10 tries"))
+		}
+		// Get the channel page content body.
+		body := getBody(username)
+		//
+		if body == "" {
+			continue
+		}
+		// Get the master playlist URL from extracting the channel body.
+		hlsSource, baseURL = getHLSSource(body)
+		// Get the best resolution m3u8 by parsing the HLS source table.
+		m3u8Source = parseHLSSource(hlsSource, baseURL)
+		//
+		if m3u8Source != "" {
+			break
+		}
+		<-time.After(time.Millisecond * 500)
+	}
 	// Create the master video file.
 	masterFile, _ := os.OpenFile("./"+savePath+"/"+filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	//
@@ -210,7 +234,6 @@ func isDuplicateSegment(URI string) bool {
 // still needs some attention here
 func combineSegment(master *os.File, filename string) {
 	index := 1
-	delete := 1
 	stripIndex := 1
 	var retry int
 	<-time.After(4 * time.Second)
@@ -223,7 +246,7 @@ func combineSegment(master *os.File, filename string) {
 			continue
 		}
 
-		if !pathx.Exists(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)) {
+		if _, ok := segmentMap[fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)]; !ok {
 			if retry >= 5 {
 				index++
 				retry = 0
@@ -240,7 +263,7 @@ func combineSegment(master *os.File, filename string) {
 			retry = 0
 		}
 		//
-		b, _ := ioutil.ReadFile(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
+		b := segmentMap[fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)]
 		//
 		if stripLimit != 0 && stripQuota <= 0 {
 			newMasterFilename := "./" + savePath + "/" + filename + "_" + strconv.Itoa(stripIndex) + ".ts"
@@ -253,12 +276,7 @@ func combineSegment(master *os.File, filename string) {
 		//
 		log.Printf(infoMergeSegment, index, segmentIndex)
 
-		e := os.Remove(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, delete))
-		//
-		if e != nil {
-			delete--
-		}
-		delete++
+		delete(segmentMap, fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
 		index++
 	}
 }
@@ -272,14 +290,7 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 		return
 	}
 	stripQuota -= len(body)
-	//
-	f, err := os.OpenFile(fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index), os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
-	if err != nil {
-		panic(err)
-	}
-	if _, err := f.Write(body); err != nil {
-		panic(err)
-	}
+	segmentMap[fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)] = body
 }
 
 // endpoint implements the application main function endpoint.

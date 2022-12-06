@@ -8,6 +8,9 @@ require (
 	github.com/parnurzeal/gorequest v0.2.16
 	github.com/teacat/pathx v0.0.0-20201109184104-55ec346a0c6d
 	github.com/urfave/cli/v2 v2.3.0
+)
+
+require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d // indirect
 	github.com/elazarl/goproxy v0.0.0-20210801061803-8e322dfb79c4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
