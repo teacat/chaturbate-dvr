@@ -78,7 +78,10 @@ func getChannelURL(username string) string {
 
 // getBody gets the channel page content body.
 func getBody(username string) string {
-	resp, body, _ := gorequest.New().Get(getChannelURL(username)).End()
+	resp, body, errs := gorequest.New().Get(getChannelURL(username)).End()
+	if len(errs) > 0 {
+		log.Println(color.Colorize(color.Red, errs[0].Error()))
+	}
 	if resp.StatusCode != 200 {
 		return ""
 	}
@@ -104,12 +107,15 @@ func getHLSSource(body string) (string, string) {
 		panic(err)
 	}
 
-	return roomData.HLSSource, strings.TrimRight(roomData.HLSSource, "playlist.m3u8")
+	return roomData.HLSSource, strings.TrimSuffix(roomData.HLSSource, "playlist.m3u8")
 }
 
 // parseHLSSource parses the HLS table and return the maximum resolution m3u8 source.
 func parseHLSSource(url string, baseURL string) string {
-	resp, body, _ := gorequest.New().Get(url).End()
+	resp, body, errs := gorequest.New().Get(url).End()
+	if len(errs) > 0 {
+		log.Println(color.Colorize(color.Red, errs[0].Error()))
+	}
 	if resp.StatusCode == 403 {
 		return ""
 	}
@@ -124,13 +130,19 @@ func parseHLSSource(url string, baseURL string) string {
 // parseM3U8Source gets the current segment list, the channel might goes offline if 403 was returned.
 func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err error) {
 	resp, body, errs := gorequest.New().Get(url).End()
+	if len(errs) > 0 {
+		log.Println(color.Colorize(color.Red, errs[0].Error()))
+	}
 	// Retry after 3 seconds if the connection lost or status code returns 403 (the channel might went offline).
 	if len(errs) > 0 || resp.StatusCode == http.StatusForbidden {
 		return nil, 3, errInternal
 	}
 
 	// Decode the segment table.
-	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
+	p, _, err := m3u8.DecodeFrom(strings.NewReader(body), true)
+	if err != nil {
+		log.Println(color.Colorize(color.Red, err.Error()))
+	}
 	media, ok := p.(*m3u8.MediaPlaylist)
 	if !ok {
 		return nil, 3, errInternal
@@ -175,7 +187,10 @@ func capture(username string) {
 		<-time.After(time.Millisecond * 500)
 	}
 	// Create the master video file.
-	masterFile, _ := os.OpenFile("./"+savePath+"/"+filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	masterFile, err := os.OpenFile("./"+savePath+"/"+filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+	if err != nil {
+		log.Println(color.Colorize(color.Red, err.Error()))
+	}
 	//
 	log.Printf("the video will be saved as \"./"+savePath+"/%s\".", filename+".ts")
 
@@ -265,9 +280,13 @@ func combineSegment(master *os.File, filename string) {
 		//
 		b := segmentMap[fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)]
 		//
+		var err error
 		if stripLimit != 0 && stripQuota <= 0 {
 			newMasterFilename := "./" + savePath + "/" + filename + "_" + strconv.Itoa(stripIndex) + ".ts"
-			master, _ = os.OpenFile(newMasterFilename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+			master, err = os.OpenFile(newMasterFilename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
+			if err != nil {
+				log.Println(color.Colorize(color.Red, err.Error()))
+			}
 			log.Printf("exceeded the specified stripping limit, creating new video file. (file: %s)", newMasterFilename)
 			stripQuota = stripLimit
 			stripIndex++
