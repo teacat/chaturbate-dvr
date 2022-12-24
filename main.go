@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -78,7 +79,7 @@ func getChannelURL(username string) string {
 
 // getBody gets the channel page content body.
 func getBody(username string) string {
-	resp, body, errs := gorequest.New().Get(getChannelURL(username)).End()
+	resp, body, errs := gorequest.New().TLSClientConfig(&tls.Config{InsecureSkipVerify: true}).Get(getChannelURL(username)).End()
 	if len(errs) > 0 {
 		log.Println(color.Colorize(color.Red, errs[0].Error()))
 	}
@@ -112,7 +113,7 @@ func getHLSSource(body string) (string, string) {
 
 // parseHLSSource parses the HLS table and return the maximum resolution m3u8 source.
 func parseHLSSource(url string, baseURL string) string {
-	resp, body, errs := gorequest.New().Get(url).End()
+	resp, body, errs := gorequest.New().TLSClientConfig(&tls.Config{InsecureSkipVerify: true}).Get(url).End()
 	if len(errs) > 0 {
 		log.Println(color.Colorize(color.Red, errs[0].Error()))
 	}
@@ -129,7 +130,7 @@ func parseHLSSource(url string, baseURL string) string {
 
 // parseM3U8Source gets the current segment list, the channel might goes offline if 403 was returned.
 func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err error) {
-	resp, body, errs := gorequest.New().Get(url).End()
+	resp, body, errs := gorequest.New().TLSClientConfig(&tls.Config{InsecureSkipVerify: true}).Get(url).End()
 	if len(errs) > 0 {
 		log.Println(color.Colorize(color.Red, errs[0].Error()))
 	}
@@ -302,7 +303,7 @@ func combineSegment(master *os.File, filename string) {
 
 // fetchSegment fetches the segment and append to the master file.
 func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, filename string, index int) {
-	_, body, _ := gorequest.New().Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
+	_, body, _ := gorequest.New().TLSClientConfig(&tls.Config{InsecureSkipVerify: true}).Get(fmt.Sprintf("%s%s", baseURL, segment.URI)).EndBytes()
 	log.Printf("fetching %s (size: %d)\n", segment.URI, len(body))
 	if len(body) == 0 {
 		log.Printf(infoSkipped, segment.URI)
