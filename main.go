@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/TwiN/go-color"
@@ -34,6 +35,8 @@ var segmentIndex int
 
 // segmentMap is the map stores temporary video segments, it will be merged into master video file then got deleted.
 var segmentMap map[string][]byte = make(map[string][]byte)
+
+var segmentMapLock sync.Mutex
 
 // stripLimit reprsents the maximum Bytes sizes to split the video into chunks.
 var stripLimit int
@@ -295,8 +298,9 @@ func combineSegment(master *os.File, filename string) {
 		master.Write(b)
 		//
 		log.Printf(infoMergeSegment, index, segmentIndex)
-
+		segmentMapLock.Lock()
 		delete(segmentMap, fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index))
+		segmentMapLock.Unlock()
 		index++
 	}
 }
@@ -310,7 +314,9 @@ func fetchSegment(master *os.File, segment *m3u8.MediaSegment, baseURL string, f
 		return
 	}
 	stripQuota -= len(body)
+	segmentMapLock.Lock()
 	segmentMap[fmt.Sprintf("./%s/%s~%d.ts", savePath, filename, index)] = body
+	segmentMapLock.Unlock()
 }
 
 // endpoint implements the application main function endpoint.
