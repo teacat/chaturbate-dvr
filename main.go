@@ -83,7 +83,7 @@ func getBody(username string) string {
 	if len(errs) > 0 {
 		log.Println(color.Colorize(color.Red, errs[0].Error()))
 	}
-	if resp.StatusCode != 200 {
+	if resp == nil || resp.StatusCode != 200 {
 		return ""
 	}
 	return body
