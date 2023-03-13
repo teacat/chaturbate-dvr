@@ -120,7 +120,7 @@ func parseHLSSource(url string, baseURL string) string {
 	if len(errs) > 0 {
 		log.Println(color.Colorize(color.Red, errs[0].Error()))
 	}
-	if resp.StatusCode == 403 {
+	if resp == nil || resp.StatusCode == 403 {
 		return ""
 	}
 	p, _, _ := m3u8.DecodeFrom(strings.NewReader(body), true)
@@ -138,7 +138,7 @@ func parseM3U8Source(url string) (chunks []*m3u8.MediaSegment, wait float64, err
 		log.Println(color.Colorize(color.Red, errs[0].Error()))
 	}
 	// Retry after 3 seconds if the connection lost or status code returns 403 (the channel might went offline).
-	if len(errs) > 0 || resp.StatusCode == http.StatusForbidden {
+	if len(errs) > 0 || resp == nil || resp.StatusCode == http.StatusForbidden {
 		return nil, 3, errInternal
 	}
 
