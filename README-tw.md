@@ -37,8 +37,6 @@ Y8888D'    YP    88   YD
 
 ## 說明
 
-影片畫質永遠是以最高為優先，目前沒辦法更改（懶得寫成一個選項）。
-
 ```bash
 NAME:
    chaturbate-dvr - watching a specified chaturbate channel and auto saves the stream as local file
@@ -50,10 +48,14 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --username value, -u value  channel username to watching
-   --interval value, -i value  minutes to check if a channel goes online or not (default: 1)
-   --strip value, -s value     MB sizes to split the video into chunks (default: 0)
-   --help, -h                  show help (default: false)
+   --username value, -u value         channel username to watching
+   --interval value, -i value         minutes to check if a channel goes online or not (default: 1)
+   --strip value, -s value            MB sizes to split the video into chunks (default: 0)
+   --resolution 240, -r 240           Video resolution, could be 240, `480`, `540`, `720`, `1080` (default: "1080")
+   --resolution-fallback up, --rf up  Looking for larger or smaller resolution (up for larger, `down` for smaller) if a specified resolution was not found (default: "down")
+   --fps value, -f value              Preferred framerate, only works if steaming source supports it, otherwise it will always be 30 FPS (default: "60")
+   --help, -h                         show help (default: false)
+   --version, -v                      print the version (default: false)
 ```
 
 ## 中文對應

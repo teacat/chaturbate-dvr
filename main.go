@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/TwiN/go-color"
+	"github.com/samber/lo"
 
 	"github.com/grafov/m3u8"
 	"github.com/parnurzeal/gorequest"
@@ -43,6 +44,15 @@ var stripLimit int
 
 // stripQuota represents how many Bytes left til the next video chunk stripping.
 var stripQuota int
+
+// preferredFPS represents the preferred framerate.
+var preferredFPS string
+
+// preferredResolution represents the preferred resolution, e.g. `240`, `480`, `540`, `720`, `1080`.
+var preferredResolution string
+
+// preferredResolutionFallback represents the preferred resolution fallback, `up`, `down` or `no`.
+var preferredResolutionFallback string
 
 // path save video
 const savePath = "video"
@@ -128,7 +138,83 @@ func parseHLSSource(url string, baseURL string) string {
 	if !ok {
 		return ""
 	}
-	return fmt.Sprintf("%s%s", baseURL, master.Variants[len(master.Variants)-1].URI)
+
+	resolutions := make(map[string][]string)
+	resolutionInts := []string{}
+
+	for _, v := range master.Variants {
+		resStr := strings.Split(v.Resolution, "x")
+		resolutionInts = append(resolutionInts, resStr[1])
+		// If the resolution exists in local, it might be a higher framerate source, store it for later use
+		if _, ok := resolutions[resStr[1]]; ok {
+			resolutions[resStr[1]] = append(resolutions[resStr[1]], v.URI)
+			continue
+		}
+		if strings.Contains(v.Name, "FPS:60.0") {
+			if _, ok := resolutions[resStr[1]]; !ok {
+				resolutions[resStr[1]] = []string{"", v.URI} // The video has no 30 FPS, we fill it with an empty URI
+			} else {
+				resolutions[resStr[1]] = []string{v.URI}
+			}
+		} else {
+			resolutions[resStr[1]] = []string{v.URI}
+		}
+	}
+
+	log.Printf("Found available resolutions: %s", strings.TrimPrefix(lo.Reduce(resolutionInts, func(prev string, cur string, _ int) string {
+		return fmt.Sprintf("%s, %s", prev, cur)
+	}, ""), ", "))
+
+	pickedResolution, ok := resolutions[preferredResolution]
+	if !ok {
+		var comparison []string
+		if preferredResolutionFallback == "down" {
+			comparison = lo.Reverse(lo.Map(resolutionInts, func(v string, _ int) string { return v }))
+		} else {
+			comparison = resolutionInts
+		}
+		fallbackResolution, ok := lo.Find(comparison, func(v string) bool {
+			sizeInt, _ := strconv.Atoi(v)
+			prefInt, _ := strconv.Atoi(preferredResolution)
+			//
+			if preferredResolutionFallback == "down" {
+				return sizeInt < prefInt
+			} else {
+				return sizeInt > prefInt
+			}
+		})
+		if ok {
+			pickedResolution = resolutions[fallbackResolution]
+			log.Printf("Preferred video resolution %sp not found, use %sp instead.", preferredResolution, fallbackResolution)
+		} else {
+			if preferredResolutionFallback == "down" {
+				pickedResolution = resolutions[resolutionInts[0]]
+				log.Printf("No fallback video resolution was found, use worse quality %sp instead.", resolutionInts[0])
+			} else {
+				pickedResolution = resolutions[resolutionInts[len(resolutionInts)-1]]
+				log.Printf("No fallback video resolution was found, use best quality %sp instead.", resolutionInts[len(resolutionInts)-1])
+			}
+		}
+	} else {
+		log.Printf("Fetching video resolution in %sp.", preferredResolution)
+	}
+
+	var uri string
+
+	if preferredFPS == "60" && len(pickedResolution) > 1 {
+		log.Printf("Fetching video in 60 FPS.")
+		uri = pickedResolution[1]
+	} else {
+		log.Printf("Fetching video in 30 FPS.")
+		uri = pickedResolution[0]
+
+		if uri == "" {
+			log.Printf("The video has no 30 FPS, use 60 FPS instead.")
+			uri = pickedResolution[1]
+		}
+	}
+
+	return fmt.Sprintf("%s%s", baseURL, uri)
 }
 
 // parseM3U8Source gets the current segment list, the channel might goes offline if 403 was returned.
@@ -328,6 +414,10 @@ func endpoint(c *cli.Context) error {
 	stripLimit = c.Int("strip") * 1024 * 1024
 	stripQuota = c.Int("strip") * 1024 * 1024
 	//
+	preferredFPS = c.String("fps")
+	preferredResolution = c.String("resolution")
+	preferredResolutionFallback = c.String("resolution-fallback")
+	//
 
 	fmt.Println(" .o88b. db   db  .d8b.  d888888b db    db d8888b. d8888b.  .d8b.  d888888b d88888b")
 	fmt.Println("d8P  Y8 88   88 d8' `8b `~~88~~' 88    88 88  `8D 88  `8D d8' `8b `~~88~~' 88'")
@@ -370,6 +460,7 @@ func endpoint(c *cli.Context) error {
 
 func main() {
 	app := &cli.App{
+		Version: "0.94 Alpha",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "username",
@@ -388,6 +479,24 @@ func main() {
 				Aliases: []string{"s"},
 				Value:   0,
 				Usage:   "MB sizes to split the video into chunks",
+			},
+			&cli.StringFlag{
+				Name:    "resolution",
+				Aliases: []string{"r"},
+				Value:   "1080",
+				Usage:   "Video resolution, could be `240`, `480`, `540`, `720`, `1080`",
+			},
+			&cli.StringFlag{
+				Name:    "resolution-fallback",
+				Aliases: []string{"rf"},
+				Value:   "down",
+				Usage:   "Looking for larger or smaller resolution (`up` for larger, `down` for smaller) if a specified resolution was not found",
+			},
+			&cli.StringFlag{
+				Name:    "fps",
+				Aliases: []string{"f"},
+				Value:   "60",
+				Usage:   "Preferred framerate, only works if steaming source supports it, otherwise it will always be 30 FPS",
 			},
 		},
 		Name:   "chaturbate-dvr",
