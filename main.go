@@ -496,7 +496,7 @@ func main() {
 				Name:    "fps",
 				Aliases: []string{"f"},
 				Value:   "60",
-				Usage:   "Preferred framerate, only works if steaming source supports it, otherwise it will always be 30 FPS",
+				Usage:   "Preferred framerate, only works if streaming source supports it, otherwise it will always be 30 FPS",
 			},
 		},
 		Name:   "chaturbate-dvr",

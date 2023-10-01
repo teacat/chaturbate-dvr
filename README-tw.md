@@ -53,7 +53,7 @@ GLOBAL OPTIONS:
    --strip value, -s value            MB sizes to split the video into chunks (default: 0)
    --resolution 240, -r 240           Video resolution, could be 240, `480`, `540`, `720`, `1080` (default: "1080")
    --resolution-fallback up, --rf up  Looking for larger or smaller resolution (up for larger, `down` for smaller) if a specified resolution was not found (default: "down")
-   --fps value, -f value              Preferred framerate, only works if steaming source supports it, otherwise it will always be 30 FPS (default: "60")
+   --fps value, -f value              Preferred framerate, only works if streaming source supports it, otherwise it will always be 30 FPS (default: "60")
    --help, -h                         show help (default: false)
    --version, -v                      print the version (default: false)
 ```
