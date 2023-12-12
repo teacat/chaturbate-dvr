@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" class="is-secondary">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocas/4.2.5/tocas.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tocas/4.2.5/tocas.min.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+        <title>Chaturbate DVR</title>
+        <style>
+            .ts-input .label {
+                overflow: initial !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="ts-container is-narrow has-vertically-spaced-big">
+            <div class="ts-grid is-bottom-aligned">
+                <div class="column is-fluid">
+                    <div class="ts-header is-huge is-uppercased is-heavy has-leading-small">Chaturbate DVR</div>
+                    <div class="ts-text is-description is-bold">Version 1.0.0</div>
+                </div>
+                <div class="column">
+                    <div class="ts-wrap">
+                        <button class="ts-button is-outlined is-negative is-start-icon">
+                            <span class="ts-icon is-hand-icon"></span>
+                            Terminate
+                        </button>
+                        <button class="ts-button is-start-icon">
+                            <span class="ts-icon is-plus-icon"></span>
+                            Add Channel
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="ts-divider has-vertically-spaced-large"></div>
+
+            <div class="ts-content is-secondary is-fitted">
+                <div class="ts-blankslate">
+                    <span class="ts-icon is-eye-low-vision-icon"></span>
+                    <div class="header">No channel was watching.</div>
+                    <div class="description">Add a new Chaturbate channel to start watching and recording.</div>
+                    <div class="action">
+                        <button class="ts-button">Add Channel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ts-box">
+                <div class="ts-content is-horizontally-padded">
+                    <div class="ts-header">Add Channel</div>
+                </div>
+                <div class="ts-divider"></div>
+                <div class="ts-content is-vertically-padded">
+                    <div class="ts-control">
+                        <div class="label">Channel Username</div>
+                        <div class="content">
+                            <div class="ts-input is-start-labeled">
+                                <div class="label">https://chaturbate.com/</div>
+                                <input type="text" />
+                            </div>
+                            <div class="ts-text has-top-spaced-small">The stream will be saved to <code class="ts-text is-code">./videos/username/</code>.</div>
+                        </div>
+                    </div>
+                    <div class="ts-control has-top-spaced-large">
+                        <div class="label">Resolution</div>
+                        <div class="content">
+                            <div class="ts-grid">
+                                <div class="column">
+                                    <div class="ts-select">
+                                        <select name="" id="">
+                                            <option value="">4K</option>
+                                            <option value="">2K</option>
+                                            <option value="">1080p</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="column">
+                                    <div class="ts-select">
+                                        <select name="" id="">
+                                            <option value="">or higher</option>
+                                            <option value="">or lower</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ts-text is-description has-top-spaced-small">The higher resolution will be used if 4K was not available.</div>
+                        </div>
+                    </div>
+                    <div class="ts-control has-top-spaced-large">
+                        <div class="label">Frame Rate</div>
+                        <div class="content">
+                            <div class="ts-wrap is-compact is-vertical has-top-spaced-small">
+                                <label class="ts-radio">
+                                    <input name="eat" type="radio" checked />
+                                    60 FPS
+                                </label>
+                                <label class="ts-radio">
+                                    <input name="eat" type="radio" checked />
+                                    30 FPS
+                                </label>
+                            </div>
+
+                            <div class="ts-text is-description has-top-spaced-small">30 FPS will be used if 60 FPS was not available for the stream.</div>
+                        </div>
+                    </div>
+
+                    <div class="ts-divider has-vertically-spaced-large"></div>
+
+                    <div class="ts-control has-top-spaced">
+                        <div class="label"></div>
+                        <div class="content">
+                            <details class="ts-accordion">
+                                <summary>Splitting Options</summary>
+                                <div class="ts-content is-padded is-secondary has-top-spaced">
+                                    <div class="ts-grid is-relaxed is-2-columns">
+                                        <div class="column">
+                                            <div class="ts-text is-bold">By Filesize</div>
+                                            <div class="ts-input is-end-labeled has-top-spaced-small">
+                                                <input type="text" value="0" />
+                                                <span class="label">MB</span>
+                                            </div>
+                                        </div>
+                                        <div class="column">
+                                            <div class="ts-text is-bold">By Duration</div>
+                                            <div class="ts-input is-end-labeled has-top-spaced-small">
+                                                <input type="text" value="0" />
+                                                <span class="label">Minutes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ts-text is-description has-top-spaced">Splitting will be disabled if both options were set to 0.</div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+                <div class="ts-divider"></div>
+                <div class="ts-content is-secondary is-horizontally-padded">
+                    <div class="ts-wrap is-end-aligned">
+                        <button class="ts-button is-outlined is-secondary">Cancel</button>
+                        <button class="ts-button is-primary">Add Channel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ts-divider is-start-text is-section">
+                <span class="ts-text is-description">4 channels are watching</span>
+            </div>
+
+            <div class="ts-box is-horizontal">
+                <div class="ts-content is-padded" style="flex: 1.8">
+                    <div class="ts-header">
+                        cherylloving_
+                        <span class="ts-badge is-small is-start-spaced">RECORDING</span>
+                    </div>
+                    <div class="ts-input is-resizable has-top-spaced">
+                        <textarea name="" id="" rows="10"></textarea>
+                    </div>
+                </div>
+                <div class="ts-divider is-vertical"></div>
+                <div class="ts-content is-padded" style="flex: 1; min-width: 300px">
+                    <div class="ts-text is-description is-uppercased">Information</div>
+                    <div class="ts-grid has-top-spaced-large">
+                        <div class="column has-leading-none" style="width: 16px">
+                            <span class="ts-icon is-link-icon"></span>
+                        </div>
+                        <div class="column is-fluid">
+                            <div class="ts-text is-label">Channel URL</div>
+                            <a class="ts-text is-link" href="https://chaturbate.com/cherylloving_/" target="_blank">https://chaturbate.com/cherylloving_</a>
+                        </div>
+                    </div>
+                    <div class="ts-grid has-top-spaced">
+                        <div class="column has-leading-none" style="width: 16px">
+                            <span class="ts-icon is-folder-icon"></span>
+                        </div>
+                        <div class="column is-fluid">
+                            <div class="ts-text is-label">Saved to</div>
+                            <code class="ts-text is-code">./videos/cherylloving_/</code>
+                        </div>
+                    </div>
+                    <div class="ts-grid has-top-spaced">
+                        <div class="column has-leading-none" style="width: 16px">
+                            <span class="ts-icon is-tower-broadcast-icon"></span>
+                        </div>
+                        <div class="column is-fluid">
+                            <div class="ts-text is-label">Last streamed at</div>
+                            <div class="ts-text is-description">2023-01-02 AM 02:01 (NOW)</div>
+                        </div>
+                    </div>
+                    <div class="ts-grid has-top-spaced">
+                        <div class="column has-leading-none" style="width: 16px">
+                            <span class="ts-icon is-clock-icon"></span>
+                        </div>
+                        <div class="column is-fluid">
+                            <div class="ts-text is-label">Segment duration</div>
+                            <div class="ts-text is-description">01:02:03 / 00:03:00</div>
+                        </div>
+                    </div>
+                    <div class="ts-grid has-top-spaced">
+                        <div class="column has-leading-none" style="width: 16px">
+                            <span class="ts-icon is-chart-pie-icon"></span>
+                        </div>
+                        <div class="column is-fluid">
+                            <div class="ts-text is-label">Segment file size</div>
+                            <div class="ts-text is-description">1024 MB / 2013 MB</div>
+                        </div>
+                    </div>
+
+                    <div class="ts-grid is-2-columns has-top-spaced-large">
+                        <div class="column">
+                            <button class="ts-button is-start-icon is-secondary is-fluid">
+                                <span class="ts-icon is-pause-icon"></span>
+                                PAUSE
+                            </button>
+                        </div>
+                        <div class="column">
+                            <button class="ts-button is-start-icon is-secondary is-fluid" data-tooltip="Stop and remove the channel from the list.">
+                                <span class="ts-icon is-stop-icon"></span>
+                                STOP
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="ts-button is-start-icon is-fluid has-top-spaced-large">
+                        <span class="ts-icon is-play-icon"></span>
+                        Resume
+                    </button>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
