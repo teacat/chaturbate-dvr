@@ -1,13 +1,54 @@
 # Chaturbate DVR
 
-The program records Chaturbate stream, supports 32-bit/64-bit Windows, macOS, Linux (or ARM), comes with a Web UI.
+The program can records **multiple** Chaturbate streams, supports 32-bit/64-bit/ARM macOS, Windows, Linux, can be run on Docker.
+
+For Chaturbate-**only**, private/ticket stream is **unsupported**.
 
 ※ **[DMCA WARNING](https://www.dmca.com/)**: Contents on Chaturbate are copyrighted, you should not copy, share, distribute the content.
 
-## Hello
+&nbsp;
 
-![image](./assets/image_1.png)
-![image](./assets/image_2.png)
+## Usage
+
+1. Download **`source code (zip)`** from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page.
+2. Unzip **`/bin`** folder and look up for executable that **fits your system**.
+
+&nbsp;
+
+**🌐 Start the program with the Web UI**
+
+Visit [`http://localhost:8080`](http://localhost:8080) to use the Web UI.
+
+```yaml
+# Windows (or double-click `chaturbate-dvr.exe` to open)
+$ chaturbate-dvr.exe
+
+# macOS or Linux
+$ chaturbate-dvr
+```
+
+&nbsp;
+
+**💻 or... Run as a command-line tool**
+
+Run the program with a channel name (`-u CHANNEL_USERNAME`) records the channel immediately, and the Web UI will be disabled.
+
+```yaml
+# Windows
+$ chaturbate-dvr.exe -u CHANNEL_USERNAME
+
+# macOS or Linux
+$ chaturbate-dvr -u CHANNEL_USERNAME
+```
+
+&nbsp;
+
+## Preview
+
+![image_1](https://github.com/teacat/chaturbate-dvr/assets/7308718/c6d17ffe-eba7-4296-9315-f501489d85f3)
+![image_2](https://github.com/teacat/chaturbate-dvr/assets/7308718/d02923e0-574d-4a15-a373-8b0599101e3f)
+
+**or... Command-line tool**
 
 ```
 $ ./chaturbate-dvr -u emillybrowm start
@@ -36,30 +77,6 @@ $ ./chaturbate-dvr -u emillybrowm start
 
 &nbsp;
 
-## Usage
-
-Start the program also enables the Web UI. Visit [`http://localhost:8080`](http://localhost:8080) to use the Web UI to manage channels.
-
-```yaml
-# Windows
-$ chaturbate-dvr.exe start
-
-# macOS or Linux
-$ chaturbate-dvr start
-```
-
-&nbsp;
-
-**💻 or... Run as a command-line tool**
-
-Run the program with a channel name (`-u CHANNEL_USERNAME`) records the channel immediately, and the Web UI will be disabled.
-
-```yaml
-$ chaturbate-dvr -u CHANNEL_USERNAME start
-```
-
-&nbsp;
-
 ## Help
 
 ```bash
@@ -75,7 +92,6 @@ VERSION:
    1.0.0
 
 COMMANDS:
-   start
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -96,25 +112,25 @@ GLOBAL OPTIONS:
 
 ```yaml
 # Records in 720p/60fps
-$ chaturbate-dvr -u yamiodymel -f 60 -r 720 start
+$ chaturbate-dvr -u yamiodymel -r 720 -f 60
 
 # Split the video every 30 minutes
-$ chaturbate-dvr -u yamiodymel -sd 30 start
+$ chaturbate-dvr -u yamiodymel -sd 30
 
 # Split the video every 1024 MB
-$ chaturbate-dvr -u yamiodymel -sf 1024 start
+$ chaturbate-dvr -u yamiodymel -sf 1024
 
 # Change output filename pattern
-$ chaturbate-dvr -u yamiodymel -fp video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}} start
+$ chaturbate-dvr -u yamiodymel -fp video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
 ```
 
-※ If the `-u CHANNEL_NAME` flag was not specified, the settings will be default settings for Web UI to create channels.
+※ When runs in Web UI mode, the settings will be default settings for Web UI to create channels.
 
 &nbsp;
 
 ## 📺 Framerate & Resolution / Fallback
 
-Fallback indicates what to do when there's no expected target resolution, imagine the situation:
+Fallback indicates what to do when there's no expected target resolution, situation:
 
 ```
 Availables: 1080p, 720p, 240p
@@ -160,3 +176,23 @@ Pattern: video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}
 ```
 
 ※ The file will be saved as `.ts` format and it's not configurable.
+
+&nbsp;
+
+## 💬 Verbose Log
+
+Change `-log-level` to `DEBUG` to see more details in terminal, like Duration and Size.
+
+```yaml
+# Availables: DEBUG, INFO, WARN, ERROR
+$ chaturbate-dvr -u hepbugbear -log-level DEBUG
+[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #0 written
+[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 0.00 MiB
+[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #1 written
+[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 1.36 MiB
+[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #2 written
+[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 2.72 MiB
+[2024-01-24 01:18:12] [DEBUG] [hepbugbear] segment #3 fetched
+[2024-01-24 01:18:13] [INFO] [hepbugbear] segment #3 written
+[2024-01-24 01:18:13] [DEBUG] [hepbugbear] duration: 00:00:10, size: 4.08 MiB
+```

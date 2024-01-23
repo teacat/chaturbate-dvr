@@ -93,12 +93,6 @@ func main() {
 			//},
 		},
 		Action: start,
-		Commands: []*cli.Command{
-			{
-				Name:   "start",
-				Action: start,
-			},
-		},
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
@@ -155,6 +149,8 @@ func startWeb(c *cli.Context) error {
 	r.GET("/api/listen_update", handler.NewListenUpdateHandler(m, c).Handle)
 	r.POST("/api/get_settings", handler.NewGetSettingsHandler(c).Handle)
 	r.POST("/api/terminate_program", handler.NewTerminateProgramHandler(c).Handle)
+
+	fmt.Printf("👋 Visit http://localhost:%s to use the Web UI\n", c.String("port"))
 
 	return r.Run(fmt.Sprintf(":%s", c.String("port")))
 }

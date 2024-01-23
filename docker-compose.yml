@@ -4,6 +4,6 @@ services:
     chaturbate-dvr:
         build: .
         environment:
-            - USERNAME=my_lovely_channel_name
+            - USERNAME=CHANNEL_USERNAME
         volumes:
-            - ./video/my_lovely_channel_name:/usr/src/app/video
+            - ./videos:/usr/src/app/videos
