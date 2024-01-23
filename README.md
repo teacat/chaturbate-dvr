@@ -1,6 +1,6 @@
 # Chaturbate DVR
 
-The program can records **multiple** Chaturbate streams, supports 32-bit/64-bit/ARM macOS, Windows, Linux, can be run on Docker.
+The program can records **multiple** Chaturbate streams, supports macOS, Windows, Linux, can be run on Docker.
 
 For Chaturbate-**only**, private/ticket stream is **unsupported**.
 
