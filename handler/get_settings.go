@@ -15,6 +15,7 @@ type GetSettingsHandlerRequest struct {
 }
 
 type GetSettingsHandlerResponse struct {
+	Version            string `json:"version"`
 	Framerate          int    `json:"framerate"`
 	Resolution         int    `json:"resolution"`
 	ResolutionFallback string `json:"resolution_fallback"`
@@ -49,6 +50,7 @@ func (h *GetSettingsHandler) Handle(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, &GetSettingsHandlerResponse{
+		Version:            h.cli.App.Version,
 		Framerate:          h.cli.Int("framerate"),
 		Resolution:         h.cli.Int("resolution"),
 		ResolutionFallback: h.cli.String("resolution-fallback"),

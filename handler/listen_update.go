@@ -46,8 +46,9 @@ func (h *ListenUpdateHandler) Handle(c *gin.Context) {
 			"is_paused":        update.IsPaused,
 			"is_online":        update.IsOnline,
 			"last_streamed_at": update.LastStreamedAt,
-			"segment_duration": DurationStr(update.SegmentDuration),
-			"segment_filesize": ByteStr(update.SegmentFilesize),
+			"segment_duration": update.SegmentDurationStr(),
+			"segment_filesize": update.SegmentFilesizeStr(),
+			"filename":         update.Filename,
 		})
 		return true
 	})

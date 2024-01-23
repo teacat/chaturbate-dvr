@@ -38,7 +38,7 @@ function data() {
         //
         async call(path, body) {
             try {
-                var resp = await fetch(`http://localhost:8080/api/${path}`, {
+                var resp = await fetch(`/api/${path}`, {
                     body: JSON.stringify(body),
                     method: "POST",
                 })
@@ -101,6 +101,9 @@ function data() {
 
         // deleteChannel
         async deleteChannel(username) {
+            if (!confirm(`Are you sure you want to delete the channel "${username}"?`)) {
+                return
+            }
             var [_, err] = await this.call("delete_channel", { username })
             if (!err) {
                 this.channels = this.channels.filter(ch => ch.username !== username)
@@ -110,6 +113,15 @@ function data() {
         // pauseChannel
         async pauseChannel(username) {
             await this.call("pause_channel", { username })
+        },
+
+        // terminateProgram
+        async terminateProgram() {
+            if (confirm("Are you sure you want to terminate the program?")) {
+                alert("The program is terminated, any error messages are safe to ignore.")
+                await this.call("terminate_program", {})
+            }
+
         },
 
         // resumeChannel
@@ -134,7 +146,7 @@ function data() {
 
         // listenUpdate
         listenUpdate() {
-            var source = new EventSource("http://localhost:8080/api/listen_update")
+            var source = new EventSource("/api/listen_update")
 
             source.onmessage = event => {
                 var data = JSON.parse(event.data)
@@ -174,13 +186,9 @@ function data() {
         downloadLogs(username) {
             var a = window.document.createElement('a');
             a.href = window.URL.createObjectURL(new Blob([this.channels[this.channels.findIndex(ch => ch.username === username)].logs.join('\n')], { type: 'text/plain', oneTimeOnly: true }));
-            a.download = 'test.txt';
-
-            // Append anchor to body.
+            a.download = `${username}_logs.txt`
             document.body.appendChild(a);
             a.click();
-
-            // Remove anchor from body
             document.body.removeChild(a);
         },
 

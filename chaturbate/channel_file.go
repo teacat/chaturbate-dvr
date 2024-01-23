@@ -3,9 +3,9 @@ package chaturbate
 import (
 	"bytes"
 	"fmt"
-	"html/template"
 	"os"
 	"path/filepath"
+	"text/template"
 	"time"
 )
 
@@ -27,17 +27,14 @@ func (w *Channel) filename() (string, error) {
 	} else {
 		data["Sequence"] = w.splitIndex
 	}
-
 	t, err := template.New("filename").Parse(w.filenamePattern)
 	if err != nil {
 		return "", err
 	}
-
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
 		return "", err
 	}
-
 	return buf.String(), nil
 }
 
@@ -45,7 +42,7 @@ func (w *Channel) filename() (string, error) {
 func (w *Channel) newFile() error {
 	filename, err := w.filename()
 	if err != nil {
-		return fmt.Errorf("error occurred while parsing filename pattern: %w", err)
+		return fmt.Errorf("filename pattern error: %w", err)
 	}
 	if err := os.MkdirAll(filepath.Dir(filename), 0777); err != nil {
 		return fmt.Errorf("create folder: %w", err)
@@ -54,7 +51,7 @@ func (w *Channel) newFile() error {
 	if err != nil {
 		return fmt.Errorf("cannot open file: %s: %w", filename, err)
 	}
-	w.log("The video will be saved as %s.ts", filename)
+	w.log(logTypeInfo, "the stream will be saved as %s.ts", filename)
 	w.file = file
 	return nil
 }
@@ -66,11 +63,4 @@ func (w *Channel) nextFile() error {
 	w.SegmentDuration = 0
 
 	return w.newFile()
-}
-
-func (w *Channel) Filename() string {
-	if w.file == nil {
-		return ""
-	}
-	return w.file.Name()
 }

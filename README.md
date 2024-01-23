@@ -1,4 +1,12 @@
-#
+# Chaturbate DVR
+
+The program watches a specified Chaturbate channel and save the stream in real-time when the channel goes online.
+
+**Warning**: The streaming content on Chaturbate is copyrighted, you should not copy, share, distribute the content. (for more information, check [DMCA](https://www.dmca.com/))
+
+## Usage
+
+The program works for 64-bit macOS, Linux, Windows (or ARM). Just get in the `/bin` folder and find your operating system then execute the program in terminal.
 
 ## 📺 Framerate & Resolution / Fallback
 

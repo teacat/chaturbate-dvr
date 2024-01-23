@@ -1,21 +1,38 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
+	"net/http"
 	"os"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/teacat/chaturbate-dvr/chaturbate"
 	"github.com/teacat/chaturbate-dvr/handler"
 	"github.com/urfave/cli/v2"
 )
 
+const logo = `
+ ██████╗██╗  ██╗ █████╗ ████████╗██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗
+██╔════╝██║  ██║██╔══██╗╚══██╔══╝██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+██║     ███████║███████║   ██║   ██║   ██║██████╔╝██████╔╝███████║   ██║   █████╗
+██║     ██╔══██║██╔══██║   ██║   ██║   ██║██╔══██╗██╔══██╗██╔══██║   ██║   ██╔══╝
+╚██████╗██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║██████╔╝██║  ██║   ██║   ███████╗
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+██████╗ ██╗   ██╗██████╗
+██╔══██╗██║   ██║██╔══██╗
+██║  ██║██║   ██║██████╔╝
+██║  ██║╚██╗ ██╔╝██╔══██╗
+██████╔╝ ╚████╔╝ ██║  ██║
+╚═════╝   ╚═══╝  ╚═╝  ╚═╝`
+
 func main() {
 	app := &cli.App{
-		Name:  "chaturbate-dvr",
-		Usage: "",
+		Name:    "chaturbate-dvr",
+		Version: "1.0.0",
+		Usage:   "Records your favorite Chaturbate stream 😎🫵",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "username",
@@ -61,25 +78,24 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:  "log-level",
-				Usage: "log level, availables: 'debug', 'info', 'error'",
-				Value: "info",
+				Usage: "log level, availables: 'DEBUG', 'INFO', 'WARN', 'ERROR'",
+				Value: "INFO",
 			},
 			&cli.StringFlag{
 				Name:  "port",
 				Usage: "port to expose the web interface and API",
 				Value: "8080",
 			},
-			&cli.StringFlag{
-				Name:  "gui",
-				Usage: "enabling GUI, availables: 'none', 'web'",
-				Value: "none",
-			},
+			//&cli.StringFlag{
+			//	Name:  "gui",
+			//	Usage: "enabling GUI, availables: 'no', 'web'",
+			//	Value: "web",
+			//},
 		},
 		Action: start,
 		Commands: []*cli.Command{
 			{
 				Name:   "start",
-				Usage:  "",
 				Action: start,
 			},
 		},
@@ -90,12 +106,46 @@ func main() {
 }
 
 func start(c *cli.Context) error {
-	r := gin.Default()
-	r.Use(cors.Default())
-	m, err := chaturbate.NewManager()
-	if err != nil {
+	fmt.Println(logo)
+
+	//if c.String("gui") == "web" {
+	if c.String("username") == "" {
+		return startWeb(c)
+	}
+
+	m := chaturbate.NewManager(c)
+	if err := m.CreateChannel(&chaturbate.Config{
+		Username:           c.String("username"),
+		Framerate:          c.Int("framerate"),
+		Resolution:         c.Int("resolution"),
+		ResolutionFallback: c.String("resolution-fallback"),
+		FilenamePattern:    c.String("filename-pattern"),
+		SplitDuration:      c.Int("split-duration"),
+		SplitFilesize:      c.Int("split-filesize"),
+	}); err != nil {
 		return err
 	}
+
+	select {} // block forever
+}
+
+//go:embed handler/view
+var FS embed.FS
+
+func startWeb(c *cli.Context) error {
+	gin.SetMode(gin.ReleaseMode)
+	r := gin.Default()
+
+	//r.Use(cors.Default())
+	m := chaturbate.NewManager(c)
+
+	fe, err := fs.Sub(FS, "handler/view")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	r.StaticFS("/static", http.FS(fe))
+	r.StaticFileFS("/", "/", http.FS(fe))
+
 	r.POST("/api/get_channel", handler.NewGetChannelHandler(m, c).Handle)
 	r.POST("/api/create_channel", handler.NewCreateChannelHandler(m, c).Handle)
 	r.POST("/api/list_channels", handler.NewListChannelsHandler(m, c).Handle)
@@ -104,6 +154,7 @@ func start(c *cli.Context) error {
 	r.POST("/api/resume_channel", handler.NewResumeChannelHandler(m, c).Handle)
 	r.GET("/api/listen_update", handler.NewListenUpdateHandler(m, c).Handle)
 	r.POST("/api/get_settings", handler.NewGetSettingsHandler(c).Handle)
+	r.POST("/api/terminate_program", handler.NewTerminateProgramHandler(c).Handle)
 
 	return r.Run(fmt.Sprintf(":%s", c.String("port")))
 }
