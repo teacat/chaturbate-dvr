@@ -1,61 +1,197 @@
-# Chaturbate DVR (Alpha)
+# Chaturbate DVR
 
-[[正體中文翻譯點此]](README-tw.md)
+The program can records **multiple** Chaturbate streams, supports macOS, Windows, Linux, can be run on Docker.
 
-The program watches a specified Chaturbate channel and save the stream in real-time when the channel goes online, so you won't miss anything.
+For Chaturbate-**only**, private/ticket stream is **unsupported**.
 
-**Warning**: The streaming content on Chaturbate is copyrighted, you should not copy, share, distribute the content. (for more information, check [DMCA](https://www.dmca.com/))
+※ **[DMCA WARNING](https://www.dmca.com/)**: Contents on Chaturbate are copyrighted, you should not copy, share, distribute the content.
 
-**Disclaimer**: Due to early development, might have frames dropped (20s gone in a 3hrs long stream), still requires more tests.
+&nbsp;
 
 ## Usage
 
-The program works for 64-bit macOS, Linux, Windows (too lazy to compile for 32-bit). Just get in the `/bin` folder and find your operating system then execute the program in terminal.
+Download **`source code (zip)`** from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page. Unzip **`/bin`** folder and look up for executable that **fits your system**.
 
-```bash
-$ chaturbate-dvr -u my_lovely_channel_name
+&nbsp;
 
- .o88b. db   db  .d8b.  d888888b db    db d8888b. d8888b.  .d8b.  d888888b d88888b
-d8P  Y8 88   88 d8' `8b `~~88~~' 88    88 88  `8D 88  `8D d8' `8b `~~88~~' 88'
-8P      88ooo88 88ooo88    88    88    88 88oobY' 88oooY' 88ooo88    88    88ooooo
-8b      88~~~88 88~~~88    88    88    88 88`8b   88~~~b. 88~~~88    88    88~~~~~
-Y8b  d8 88   88 88   88    88    88b  d88 88 `88. 88   8D 88   88    88    88.
- `Y88P' YP   YP YP   YP    YP    ~Y8888P' 88   YD Y8888P' YP   YP    YP    Y88888P
-d8888b. db    db d8888b.
-88  `8D 88    88 88  `8D
-88   88 Y8    8P 88oobY'
-88   88 `8b  d8' 88`8b
-88  .8D  `8bd8'  88 `88.
-Y8888D'    YP    88   YD
----
-2020/02/13 18:05:22 my_lovely_channel_name is online! fetching...
-2020/02/13 18:05:24 the video will be saved as "2020-02-13_22-16-27.ts".
-2020/02/13 18:05:28 fetching media_w402018999_b5128000_t64RlBTOjI5Ljk3_9134.ts (size: 936428)
-2020/02/13 19:07:06 failed to fetch the video segments, will try again. (1/2)
-2020/02/13 19:07:06 failed to fetch the video segments, will try again. (2/2)
-2020/02/13 19:07:11 failed to fetch the video segments after retried, my_lovely_channel_name might went offline.
-2020/02/13 19:07:11 my_lovely_channel_name is not online, check again after 3 minute(s)...
+**🌐 Start the program with the Web UI**
+
+Visit [`http://localhost:8080`](http://localhost:8080) to use the Web UI.
+
+```yaml
+# Windows (or double-click `chaturbate-dvr.exe` to open)
+$ chaturbate-dvr.exe
+
+# macOS or Linux
+$ chaturbate-dvr
 ```
+
+&nbsp;
+
+**💻 or... Run as a command-line tool**
+
+Run the program with a channel name (`-u CHANNEL_USERNAME`) records the channel immediately, and the Web UI will be disabled.
+
+```yaml
+# Windows
+$ chaturbate-dvr.exe -u CHANNEL_USERNAME
+
+# macOS or Linux
+$ chaturbate-dvr -u CHANNEL_USERNAME
+```
+
+&nbsp;
+
+## Preview
+
+![image_1](https://github.com/teacat/chaturbate-dvr/assets/7308718/c6d17ffe-eba7-4296-9315-f501489d85f3)
+![image_2](https://github.com/teacat/chaturbate-dvr/assets/7308718/d02923e0-574d-4a15-a373-8b0599101e3f)
+
+**or... Command-line tool**
+
+```
+$ ./chaturbate-dvr -u emillybrowm start
+
+ ██████╗██╗  ██╗ █████╗ ████████╗██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗
+██╔════╝██║  ██║██╔══██╗╚══██╔══╝██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
+██║     ███████║███████║   ██║   ██║   ██║██████╔╝██████╔╝███████║   ██║   █████╗
+██║     ██╔══██║██╔══██║   ██║   ██║   ██║██╔══██╗██╔══██╗██╔══██║   ██║   ██╔══╝
+╚██████╗██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║██████╔╝██║  ██║   ██║   ███████╗
+ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+██████╗ ██╗   ██╗██████╗
+██╔══██╗██║   ██║██╔══██╗
+██║  ██║██║   ██║██████╔╝
+██║  ██║╚██╗ ██╔╝██╔══██╗
+██████╔╝ ╚████╔╝ ██║  ██║
+╚═════╝   ╚═══╝  ╚═╝  ╚═╝
+[2024-01-24 00:11:54] [INFO] [emillybrowm] channel created
+[2024-01-24 00:11:55] [INFO] [emillybrowm] channel is online, start fetching...
+[2024-01-24 00:11:55] [INFO] [emillybrowm] the stream will be saved as videos/emillybrowm_2024-01-24_00-11-55.ts
+[2024-01-24 00:11:55] [INFO] [emillybrowm] resolution 1080p is used
+[2024-01-24 00:11:55] [INFO] [emillybrowm] framerate 30fps is used
+[2024-01-24 00:11:57] [INFO] [emillybrowm] segment #0 written
+[2024-01-24 00:11:57] [INFO] [emillybrowm] segment #1 written
+[2024-01-24 00:11:57] [INFO] [emillybrowm] segment #2 written
+```
+
+&nbsp;
 
 ## Help
 
 ```bash
+$ chaturbate-dvr -h
+
 NAME:
-   chaturbate-dvr - watching a specified chaturbate channel and auto saves the stream as local file
+   chaturbate-dvr - Records your favorite Chaturbate stream 😎🫵
 
 USAGE:
-   main [global options] command [command options] [arguments...]
+   chaturbate-dvr [global options] command [command options]
+
+VERSION:
+   1.0.0
 
 COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --username value, -u value         channel username to watching
-   --interval value, -i value         minutes to check if a channel goes online or not (default: 1)
-   --strip value, -s value            MB sizes to split the video into chunks (default: 0)
-   --resolution 240, -r 240           Video resolution, could be 240, `480`, `540`, `720`, `1080` (default: "1080")
-   --resolution-fallback up, --rf up  Looking for larger or smaller resolution (up for larger, `down` for smaller) if a specified resolution was not found (default: "down")
-   --fps value, -f value              Preferred framerate, only works if streaming source supports it, otherwise it will always be 30 FPS (default: "60")
-   --help, -h                         show help (default: false)
-   --version, -v                      print the version (default: false)
+   --username value, -u value               channel username to record.
+   --framerate value, -f value              preferred framerate. (default: 30)
+   --resolution value, -r value             preferred resolution (default: 1080)
+   --resolution-fallback value, --rf value  fallback to 'up' (larger) or 'down' (smaller) resolution if preferred resolution is not available (default: "down")
+   --filename-pattern value, --fp value     filename pattern for videos (default: "videos/{{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}{{if .Sequence}}_{{.Sequence}}{{end}}")
+   --split-duration value, --sd value       minutes to split each video into segments ('0' to disable) (default: 0)
+   --split-filesize value, --sf value       size in MB to split each video into segments ('0' to disable) (default: 0)
+   --log-level value                        log level, availables: 'DEBUG', 'INFO', 'WARN', 'ERROR' (default: "INFO")
+   --port value                             port to expose the web interface and API (default: "8080")
+   --help, -h                               show help
+   --version, -v                            print the version
+```
+
+**Examples**:
+
+```yaml
+# Records in 720p/60fps
+$ chaturbate-dvr -u yamiodymel -r 720 -f 60
+
+# Split the video every 30 minutes
+$ chaturbate-dvr -u yamiodymel -sd 30
+
+# Split the video every 1024 MB
+$ chaturbate-dvr -u yamiodymel -sf 1024
+
+# Change output filename pattern
+$ chaturbate-dvr -u yamiodymel -fp video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
+```
+
+※ When runs in Web UI mode, the settings will be default settings for Web UI to create channels.
+
+&nbsp;
+
+## 📺 Framerate & Resolution / Fallback
+
+Fallback indicates what to do when there's no expected target resolution, situation:
+
+```
+Availables: 1080p, 720p, 240p
+
+Resolution: 480p (fallback setted to: up)
+    Result: 720p will be used
+
+Resolution: 480p (fallback setted to: down)
+    Result: 240p will be used
+```
+
+&nbsp;
+
+## 📄 Filename Pattern
+
+The format is based on [Go Template Syntax](https://pkg.go.dev/text/template), available variables are:
+
+`{{.Username}}`, `{{.Year}}`, `{{.Month}}`, `{{.Day}}`, `{{.Hour}}`, `{{.Minute}}`, `{{.Second}}`, `{{.Sequence}}`
+
+&nbsp;
+
+Default it hides the sequence if it's zero.
+
+```
+Pattern: {{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}{{if .Sequence}}_{{.Sequence}}{{end}}
+ Output: yamiodymel_2024-01-02_13-45-00.ts    # Sequence won't be shown if it's zero.
+ Output: yamiodymel_2024-01-02_13-45-00_1.ts
+```
+
+**👀 or... The sequence can be shown even if it's zero.**
+
+```
+Pattern: {{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
+ Output: yamiodymel_2024-01-02_13-45-00_0.ts
+ Output: yamiodymel_2024-01-02_13-45-00_1.ts
+```
+
+**📁 or... Folder per each channel.**
+
+```
+Pattern: video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
+ Output: video/yamiodymel/2024-01-02_13-45-00_0.ts
+```
+
+※ The file will be saved as `.ts` format and it's not configurable.
+
+&nbsp;
+
+## 💬 Verbose Log
+
+Change `-log-level` to `DEBUG` to see more details in terminal, like Duration and Size.
+
+```yaml
+# Availables: DEBUG, INFO, WARN, ERROR
+$ chaturbate-dvr -u hepbugbear -log-level DEBUG
+[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #0 written
+[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 0.00 MiB
+[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #1 written
+[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 1.36 MiB
+[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #2 written
+[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 2.72 MiB
+[2024-01-24 01:18:12] [DEBUG] [hepbugbear] segment #3 fetched
+[2024-01-24 01:18:13] [INFO] [hepbugbear] segment #3 written
+[2024-01-24 01:18:13] [DEBUG] [hepbugbear] duration: 00:00:10, size: 4.08 MiB
 ```
