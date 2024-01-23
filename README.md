@@ -10,7 +10,9 @@ For Chaturbate-**only**, private/ticket stream is **unsupported**.
 
 ## Usage
 
-Download **`source code (zip)`** from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page. Unzip **`/bin`** folder and look up for executable that **fits your system**.
+Download **`source code (zip)`** from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page,
+
+and Unzip **`/bin`** folder to look up for executable that **fits your system**.
 
 &nbsp;
 
@@ -50,7 +52,7 @@ $ chaturbate-dvr -u CHANNEL_USERNAME
 **or... Command-line tool**
 
 ```
-$ ./chaturbate-dvr -u emillybrowm start
+$ ./chaturbate-dvr -u emillybrowm
 
  ██████╗██╗  ██╗ █████╗ ████████╗██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗
 ██╔════╝██║  ██║██╔══██╗╚══██╔══╝██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
