@@ -91,6 +91,12 @@ func (w *Channel) Run() {
 		}
 		w.IsOnline = false
 
+		// close file when offline so user can move/delete it
+		if w.file != nil {
+			w.file.Close()
+			w.file = nil
+		}
+
 		w.log(logTypeInfo, "channel is offline, check again 1 min later")
 		<-time.After(1 * time.Minute) // 1 minute cooldown to check online status
 	}
