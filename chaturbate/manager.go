@@ -1,7 +1,9 @@
 package chaturbate
 
 import (
+	"encoding/json"
 	"errors"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v2"
@@ -159,5 +161,47 @@ func (m *Manager) StopListenUpdate(id string) error {
 	}
 	delete(m.Updates, id)
 	close(v)
+	return nil
+}
+
+// SaveChannels
+func (m *Manager) SaveChannels() error {
+	configs := make([]*Config, 0)
+	for _, v := range m.Channels {
+		configs = append(configs, &Config{
+			Username:           v.Username,
+			Framerate:          v.Framerate,
+			Resolution:         v.Resolution,
+			ResolutionFallback: v.ResolutionFallback,
+			FilenamePattern:    v.filenamePattern,
+			SplitDuration:      v.SplitDuration,
+			SplitFilesize:      v.SplitFilesize,
+		})
+	}
+	b, err := json.MarshalIndent(configs, "", "    ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("chaturbate_channels.json", b, 0777)
+}
+
+// LoadChannels
+func (m *Manager) LoadChannels() error {
+	b, err := os.ReadFile("chaturbate_channels.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+	var configs []*Config
+	if err := json.Unmarshal(b, &configs); err != nil {
+		return err
+	}
+	for _, v := range configs {
+		if err := m.CreateChannel(v); err != nil {
+			return err
+		}
+	}
 	return nil
 }

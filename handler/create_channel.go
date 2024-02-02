@@ -60,5 +60,9 @@ func (h *CreateChannelHandler) Handle(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+	if err := h.chaturbate.SaveChannels(); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 	c.JSON(http.StatusOK, &CreateChannelResponse{})
 }

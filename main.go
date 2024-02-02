@@ -132,6 +132,9 @@ func startWeb(c *cli.Context) error {
 
 	//r.Use(cors.Default())
 	m := chaturbate.NewManager(c)
+	if err := m.LoadChannels(); err != nil {
+		return err
+	}
 
 	fe, err := fs.Sub(FS, "handler/view")
 	if err != nil {
