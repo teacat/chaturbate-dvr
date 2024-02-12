@@ -42,6 +42,18 @@ $ chaturbate-dvr -u CHANNEL_USERNAME
 
 &nbsp;
 
+**🔒 Restrict access page**
+
+If you want to restrict access to the page using a username and password, add this to the accounts.json file
+
+```json
+{
+  "john.doe": "password"
+}
+```
+
+&nbsp;
+
 ## Preview
 
 ![image_1](https://github.com/teacat/chaturbate-dvr/assets/7308718/c6d17ffe-eba7-4296-9315-f501489d85f3)

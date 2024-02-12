@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log"
@@ -126,6 +127,21 @@ func start(c *cli.Context) error {
 //go:embed handler/view
 var FS embed.FS
 
+func listAccounts() gin.Accounts {
+	b, err := os.ReadFile("accounts.json")
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return nil
+	}
+	var configs gin.Accounts
+	if err := json.Unmarshal(b, &configs); err != nil {
+		return nil
+	}
+	return configs
+}
+
 func startWeb(c *cli.Context) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -140,18 +156,30 @@ func startWeb(c *cli.Context) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	r.StaticFS("/static", http.FS(fe))
-	r.StaticFileFS("/", "/", http.FS(fe))
 
-	r.POST("/api/get_channel", handler.NewGetChannelHandler(m, c).Handle)
-	r.POST("/api/create_channel", handler.NewCreateChannelHandler(m, c).Handle)
-	r.POST("/api/list_channels", handler.NewListChannelsHandler(m, c).Handle)
-	r.POST("/api/delete_channel", handler.NewDeleteChannelHandler(m, c).Handle)
-	r.POST("/api/pause_channel", handler.NewPauseChannelHandler(m, c).Handle)
-	r.POST("/api/resume_channel", handler.NewResumeChannelHandler(m, c).Handle)
-	r.GET("/api/listen_update", handler.NewListenUpdateHandler(m, c).Handle)
-	r.POST("/api/get_settings", handler.NewGetSettingsHandler(c).Handle)
-	r.POST("/api/terminate_program", handler.NewTerminateProgramHandler(c).Handle)
+	accounts := listAccounts()
+
+	var authorized = r.Group("/")
+	var authorizedApi = r.Group("/api")
+
+	if len(accounts) > 0 {
+		ginBasicAuth := gin.BasicAuth(accounts)
+		authorized.Use(ginBasicAuth)
+		authorizedApi.Use(ginBasicAuth)
+	}
+
+	authorized.StaticFS("/static", http.FS(fe))
+	authorized.StaticFileFS("/", "/", http.FS(fe))
+
+	authorizedApi.POST("/get_channel", handler.NewGetChannelHandler(m, c).Handle)
+	authorizedApi.POST("/create_channel", handler.NewCreateChannelHandler(m, c).Handle)
+	authorizedApi.POST("/list_channels", handler.NewListChannelsHandler(m, c).Handle)
+	authorizedApi.POST("/delete_channel", handler.NewDeleteChannelHandler(m, c).Handle)
+	authorizedApi.POST("/pause_channel", handler.NewPauseChannelHandler(m, c).Handle)
+	authorizedApi.POST("/resume_channel", handler.NewResumeChannelHandler(m, c).Handle)
+	authorizedApi.GET("/listen_update", handler.NewListenUpdateHandler(m, c).Handle)
+	authorizedApi.POST("/get_settings", handler.NewGetSettingsHandler(c).Handle)
+	authorizedApi.POST("/terminate_program", handler.NewTerminateProgramHandler(c).Handle)
 
 	fmt.Printf("👋 Visit http://localhost:%s to use the Web UI\n", c.String("port"))
 

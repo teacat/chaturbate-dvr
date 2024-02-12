@@ -1,9 +1,10 @@
 version: "3.0"
 
 services:
-    chaturbate-dvr:
-        build: .
-        environment:
-            - USERNAME=CHANNEL_USERNAME
-        volumes:
-            - ./videos:/usr/src/app/videos
+  chaturbate-dvr:
+    container_name: chaturbate-dvr
+    build: .
+    environment:
+      - USERNAME=CHANNEL_USERNAME
+    volumes:
+      - ./videos:/usr/src/app/videos

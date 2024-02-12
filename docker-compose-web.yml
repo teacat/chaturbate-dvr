@@ -1,0 +1,12 @@
+version: "3.0"
+
+services:
+  chaturbate-dvr-web:
+    container_name: chaturbate-dvr-web
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./accounts.json:/usr/src/app/accounts.json
