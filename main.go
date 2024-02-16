@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"encoding/json"
 	"fmt"
 	"io/fs"
 	"log"
@@ -39,6 +38,18 @@ func main() {
 				Name:    "username",
 				Aliases: []string{"u"},
 				Usage:   "channel username to record.",
+				Value:   "",
+			},
+			&cli.StringFlag{
+				Name:    "gui-username",
+				Aliases: []string{"gui-u"},
+				Usage:   "username for auth web.",
+				Value:   "",
+			},
+			&cli.StringFlag{
+				Name:    "gui-password",
+				Aliases: []string{"gui-p"},
+				Usage:   "password for auth web.",
 				Value:   "",
 			},
 			&cli.IntFlag{
@@ -127,21 +138,6 @@ func start(c *cli.Context) error {
 //go:embed handler/view
 var FS embed.FS
 
-func listAccounts() gin.Accounts {
-	b, err := os.ReadFile("accounts.json")
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-		return nil
-	}
-	var configs gin.Accounts
-	if err := json.Unmarshal(b, &configs); err != nil {
-		return nil
-	}
-	return configs
-}
-
 func startWeb(c *cli.Context) error {
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -157,13 +153,16 @@ func startWeb(c *cli.Context) error {
 		log.Fatalln(err)
 	}
 
-	accounts := listAccounts()
+	guiUsername := c.String("gui-username")
+	guiPassword := c.String("gui-password")
 
 	var authorized = r.Group("/")
 	var authorizedApi = r.Group("/api")
 
-	if len(accounts) > 0 {
-		ginBasicAuth := gin.BasicAuth(accounts)
+	if guiUsername != "" && guiPassword != "" {
+		ginBasicAuth := gin.BasicAuth(gin.Accounts{
+			guiUsername: guiPassword,
+		})
 		authorized.Use(ginBasicAuth)
 		authorizedApi.Use(ginBasicAuth)
 	}

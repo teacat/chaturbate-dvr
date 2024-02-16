@@ -42,18 +42,6 @@ $ chaturbate-dvr -u CHANNEL_USERNAME
 
 &nbsp;
 
-**🔒 Restrict access page**
-
-If you want to restrict access to the page using a username and password, add this to the accounts.json file
-
-```json
-{
-  "john.doe": "password"
-}
-```
-
-&nbsp;
-
 ## Preview
 
 ![image_1](https://github.com/teacat/chaturbate-dvr/assets/7308718/c6d17ffe-eba7-4296-9315-f501489d85f3)
@@ -107,6 +95,8 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --username value, -u value               channel username to record.
+   --gui-username value, --gui-u value      username for auth web.
+   --gui-password value, --gui-p value      password for auth web.
    --framerate value, -f value              preferred framerate. (default: 30)
    --resolution value, -r value             preferred resolution (default: 1080)
    --resolution-fallback value, --rf value  fallback to 'up' (larger) or 'down' (smaller) resolution if preferred resolution is not available (default: "down")

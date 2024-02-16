@@ -8,4 +8,4 @@ RUN go mod download && go mod verify
 COPY . .
 RUN go build
 
-CMD [ "sh", "-c", "./chaturbate-dvr" ]
+CMD [ "sh", "-c", "./chaturbate-dvr -gui-username ${GUI_USERNAME} -gui-password ${GUI_PASSWORD}" ]
