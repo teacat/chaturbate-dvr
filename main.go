@@ -31,31 +31,31 @@ const logo = `
 func main() {
 	app := &cli.App{
 		Name:    "chaturbate-dvr",
-		Version: "1.0.1",
+		Version: "1.0.2",
 		Usage:   "Records your favorite Chaturbate stream 😎🫵",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "username",
 				Aliases: []string{"u"},
-				Usage:   "channel username to record.",
+				Usage:   "channel username to record",
 				Value:   "",
 			},
 			&cli.StringFlag{
 				Name:    "gui-username",
 				Aliases: []string{"gui-u"},
-				Usage:   "username for auth web.",
+				Usage:   "username for auth web (optional)",
 				Value:   "",
 			},
 			&cli.StringFlag{
 				Name:    "gui-password",
 				Aliases: []string{"gui-p"},
-				Usage:   "password for auth web.",
+				Usage:   "password for auth web (optional)",
 				Value:   "",
 			},
 			&cli.IntFlag{
 				Name:    "framerate",
 				Aliases: []string{"f"},
-				Usage:   "preferred framerate.",
+				Usage:   "preferred framerate",
 				Value:   30,
 			},
 			&cli.IntFlag{
