@@ -47,12 +47,35 @@ func (w *Channel) newFile() error {
 	if err := os.MkdirAll(filepath.Dir(filename), 0777); err != nil {
 		return fmt.Errorf("create folder: %w", err)
 	}
+	if err := w.tidyZeroes(filepath.Dir(filename)); err != nil {
+		return fmt.Errorf("tidy zeroes: %w", err)
+	}
 	file, err := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	if err != nil {
 		return fmt.Errorf("cannot open file: %s: %w", filename, err)
 	}
 	w.log(logTypeInfo, "the stream will be saved as %s.ts", filename)
 	w.file = file
+	return nil
+}
+
+// tidyZeroes
+func (w *Channel) tidyZeroes(dir string) error {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("read directory: %w", err)
+	}
+	for _, file := range files {
+		fileInfo, err := file.Info()
+		if err != nil {
+			return fmt.Errorf("get file info: %w", err)
+		}
+		if filepath.Ext(file.Name()) == ".ts" && fileInfo.Size() == 0 {
+			if err := os.Remove(filepath.Join(dir, file.Name())); err != nil {
+				return fmt.Errorf("remove zero file: %s: %w", file.Name(), err)
+			}
+		}
+	}
 	return nil
 }
 
