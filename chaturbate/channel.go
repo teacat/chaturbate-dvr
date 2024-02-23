@@ -93,8 +93,9 @@ func (w *Channel) Run() {
 
 		// close file when offline so user can move/delete it
 		if w.file != nil {
-			w.file.Close()
-			w.file = nil
+			if err := w.releaseFile(); err != nil {
+				w.log(logTypeError, "release file: %w", err)
+			}
 		}
 
 		w.log(logTypeInfo, "channel is offline, check again 1 min later")

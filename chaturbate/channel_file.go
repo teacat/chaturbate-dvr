@@ -47,9 +47,6 @@ func (w *Channel) newFile() error {
 	if err := os.MkdirAll(filepath.Dir(filename), 0777); err != nil {
 		return fmt.Errorf("create folder: %w", err)
 	}
-	if err := w.tidyZeroes(filepath.Dir(filename)); err != nil {
-		return fmt.Errorf("tidy zeroes: %w", err)
-	}
 	file, err := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	if err != nil {
 		return fmt.Errorf("cannot open file: %s: %w", filename, err)
@@ -59,28 +56,33 @@ func (w *Channel) newFile() error {
 	return nil
 }
 
-// tidyZeroes
-func (w *Channel) tidyZeroes(dir string) error {
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return fmt.Errorf("read directory: %w", err)
+// releaseFile
+func (w *Channel) releaseFile() error {
+	if w.file == nil {
+		return nil
 	}
-	for _, file := range files {
-		fileInfo, err := file.Info()
-		if err != nil {
-			return fmt.Errorf("get file info: %w", err)
-		}
-		if filepath.Ext(file.Name()) == ".ts" && fileInfo.Size() == 0 {
-			if err := os.Remove(filepath.Join(dir, file.Name())); err != nil {
-				return fmt.Errorf("remove zero file: %s: %w", file.Name(), err)
-			}
+	// close the file to remove it
+	if err := w.file.Close(); err != nil {
+		return fmt.Errorf("close file: %s: %w", w.file.Name(), err)
+	}
+	// remove it if it was empty
+	if w.SegmentFilesize == 0 {
+		w.log(logTypeInfo, "%s was removed because it was empty", w.file.Name())
+
+		if err := os.Remove(w.file.Name()); err != nil {
+			return fmt.Errorf("remove zero file: %s: %w", w.file.Name(), err)
 		}
 	}
+	w.file = nil
 	return nil
 }
 
 // nextFile
 func (w *Channel) nextFile() error {
+	if err := w.releaseFile(); err != nil {
+		w.log(logTypeError, "release file: %w", err)
+	}
+
 	w.splitIndex++
 	w.SegmentFilesize = 0
 	w.SegmentDuration = 0
