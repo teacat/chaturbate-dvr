@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teacat/chaturbate-dvr/chaturbate"
@@ -48,17 +49,20 @@ func (h *CreateChannelHandler) Handle(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	if err := h.chaturbate.CreateChannel(&chaturbate.Config{
-		Username:           req.Username,
-		Framerate:          req.Framerate,
-		Resolution:         req.Resolution,
-		ResolutionFallback: req.ResolutionFallback,
-		FilenamePattern:    req.FilenamePattern,
-		SplitDuration:      req.SplitDuration,
-		SplitFilesize:      req.SplitFilesize,
-	}); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
+	usernames := strings.Split(req.Username, ",")
+	for _, username := range usernames {
+		if err := h.chaturbate.CreateChannel(&chaturbate.Config{
+			Username:           strings.TrimSpace(username),
+			Framerate:          req.Framerate,
+			Resolution:         req.Resolution,
+			ResolutionFallback: req.ResolutionFallback,
+			FilenamePattern:    req.FilenamePattern,
+			SplitDuration:      req.SplitDuration,
+			SplitFilesize:      req.SplitFilesize,
+		}); err != nil {
+			c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
 	}
 	if err := h.chaturbate.SaveChannels(); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
