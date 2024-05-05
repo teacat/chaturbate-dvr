@@ -292,12 +292,12 @@ func (w *Channel) fetchSegments() {
 				continue
 			}
 
-			go func(index int) {
-				if err := w.requestSegment(v.URI, index); err != nil {
+			go func(index int, uri string) {
+				if err := w.requestSegment(uri, index); err != nil {
 					w.log(logTypeError, "segment #%d request error, ignored: %v", index, err)
 					return
 				}
-			}(w.segmentIndex)
+			}(w.segmentIndex, v.URI)
 			w.SegmentDuration += int(v.Duration)
 			w.segmentIndex++
 		}
@@ -347,7 +347,7 @@ func (w *Channel) requestChunks() ([]*m3u8.MediaSegment, float64, error) {
 	chunks := lo.Filter(playlist.Segments, func(v *m3u8.MediaSegment, _ int) bool {
 		return v != nil
 	})
-	return chunks, 1, nil
+	return chunks, playlist.TargetDuration, nil
 }
 
 // requestSegment requests the specific single segment and put it into the buffer.
