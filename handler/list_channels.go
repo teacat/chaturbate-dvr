@@ -28,6 +28,7 @@ type ListChannelsResponseChannel struct {
 	SplitDuration   string   `json:"split_duration"`
 	SegmentFilesize string   `json:"segment_filesize"`
 	SplitFilesize   string   `json:"split_filesize"`
+	Interval        int      `json:"interval"`
 	IsOnline        bool     `json:"is_online"`
 	IsPaused        bool     `json:"is_paused"`
 	Logs            []string `json:"logs"`
@@ -74,6 +75,7 @@ func (h *ListChannelsHandler) Handle(c *gin.Context) {
 			SplitDuration:   channel.SplitDurationStr(),
 			SegmentFilesize: channel.SegmentFilesizeStr(),
 			SplitFilesize:   channel.SplitFilesizeStr(),
+			Interval:        channel.Interval,
 			IsOnline:        channel.IsOnline,
 			IsPaused:        channel.IsPaused,
 			Logs:            channel.Logs,

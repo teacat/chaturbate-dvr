@@ -26,6 +26,7 @@ type Channel struct {
 	ChannelURL         string
 	filenamePattern    string
 	LastStreamedAt     string
+	Interval           int
 	Framerate          int
 	Resolution         int
 	ResolutionFallback string
@@ -98,8 +99,8 @@ func (w *Channel) Run() {
 			}
 		}
 
-		w.log(logTypeInfo, "channel is offline, check again 1 min later")
-		<-time.After(1 * time.Minute) // 1 minute cooldown to check online status
+		w.log(logTypeInfo, "channel is offline, check again %d min(s) later", w.Interval)
+		<-time.After(time.Duration(w.Interval) * time.Minute) // minutes cooldown to check online status
 	}
 }
 

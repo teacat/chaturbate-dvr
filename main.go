@@ -31,7 +31,7 @@ const logo = `
 func main() {
 	app := &cli.App{
 		Name:    "chaturbate-dvr",
-		Version: "1.0.4",
+		Version: "1.0.5",
 		Usage:   "Records your favorite Chaturbate stream 😎🫵",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -98,6 +98,12 @@ func main() {
 				Usage: "port to expose the web interface and API",
 				Value: "8080",
 			},
+			&cli.IntFlag{
+				Name:    "interval",
+				Aliases: []string{"i"},
+				Usage:   "minutes to check if the channel is online",
+				Value:   1,
+			},
 			//&cli.StringFlag{
 			//	Name:  "gui",
 			//	Usage: "enabling GUI, availables: 'no', 'web'",
@@ -128,6 +134,7 @@ func start(c *cli.Context) error {
 		FilenamePattern:    c.String("filename-pattern"),
 		SplitDuration:      c.Int("split-duration"),
 		SplitFilesize:      c.Int("split-filesize"),
+		Interval:           c.Int("interval"),
 	}); err != nil {
 		return err
 	}

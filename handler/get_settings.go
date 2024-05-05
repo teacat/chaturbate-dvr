@@ -22,6 +22,7 @@ type GetSettingsHandlerResponse struct {
 	FilenamePattern    string `json:"filename_pattern"`
 	SplitDuration      int    `json:"split_duration"`
 	SplitFilesize      int    `json:"split_filesize"`
+	Interval           int    `json:"interval"`
 	LogLevel           string `json:"log_level"`
 	Port               string `json:"port"`
 	GUI                string `json:"gui"`
@@ -57,6 +58,7 @@ func (h *GetSettingsHandler) Handle(c *gin.Context) {
 		FilenamePattern:    h.cli.String("filename-pattern"),
 		SplitDuration:      h.cli.Int("split-duration"),
 		SplitFilesize:      h.cli.Int("split-filesize"),
+		Interval:           h.cli.Int("interval"),
 		LogLevel:           h.cli.String("log-level"),
 		Port:               h.cli.String("port"),
 		GUI:                h.cli.String("gui"),

@@ -11,6 +11,7 @@ function data() {
             filename_pattern: "{{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}{{if .Sequence}}_{{.Sequence}}{{end}}",
             split_filesize: 0,
             split_duration: 0,
+            interval: 1,
         },
 
         // openCreateDialog
@@ -46,7 +47,7 @@ function data() {
                     this.error()
                     return [null, true]
                 }
-                return [(await resp.json()), false]
+                return [await resp.json(), false]
             } catch {
                 this.error()
                 return [null, true]
@@ -83,6 +84,7 @@ function data() {
                 filename_pattern: this.settings.filename_pattern,
                 split_filesize: this.settings.split_filesize.toString(),
                 split_duration: this.settings.split_duration.toString(),
+                interval: this.settings.interval.toString(),
             }
         },
 
@@ -96,6 +98,7 @@ function data() {
                 filename_pattern: this.form_data.filename_pattern,
                 split_filesize: parseInt(this.form_data.split_filesize),
                 split_duration: parseInt(this.form_data.split_duration),
+                interval: parseInt(this.form_data.interval),
             })
         },
 
@@ -121,7 +124,6 @@ function data() {
                 alert("The program is terminated, any error messages are safe to ignore.")
                 await this.call("terminate_program", {})
             }
-
         },
 
         // resumeChannel
@@ -184,12 +186,14 @@ function data() {
         },
 
         downloadLogs(username) {
-            var a = window.document.createElement('a');
-            a.href = window.URL.createObjectURL(new Blob([this.channels[this.channels.findIndex(ch => ch.username === username)].logs.join('\n')], { type: 'text/plain', oneTimeOnly: true }));
+            var a = window.document.createElement("a")
+            a.href = window.URL.createObjectURL(
+                new Blob([this.channels[this.channels.findIndex(ch => ch.username === username)].logs.join("\n")], { type: "text/plain", oneTimeOnly: true })
+            )
             a.download = `${username}_logs.txt`
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
         },
 
         //

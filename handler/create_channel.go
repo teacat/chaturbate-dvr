@@ -21,6 +21,7 @@ type CreateChannelRequest struct {
 	ResolutionFallback string `json:"resolution_fallback"`
 	SplitDuration      int    `json:"split_duration"`
 	SplitFilesize      int    `json:"split_filesize"`
+	Interval           int    `json:"interval"`
 }
 
 type CreateChannelResponse struct {
@@ -59,6 +60,7 @@ func (h *CreateChannelHandler) Handle(c *gin.Context) {
 			FilenamePattern:    req.FilenamePattern,
 			SplitDuration:      req.SplitDuration,
 			SplitFilesize:      req.SplitFilesize,
+			Interval:           req.Interval,
 		}); err != nil {
 			c.AbortWithError(http.StatusInternalServerError, err)
 			return

@@ -10,7 +10,7 @@ For Chaturbate-**only**, private/ticket stream is **unsupported**.
 
 ## Usage
 
-Download **`source code (zip)`** from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page. Unzip **`/bin`** folder and look up for executable that **fits your system**.
+Download executable from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page.
 
 &nbsp;
 
@@ -98,6 +98,7 @@ GLOBAL OPTIONS:
    --gui-username value, --gui-u value      username for auth web (optional)
    --gui-password value, --gui-p value      password for auth web (optional)
    --framerate value, -f value              preferred framerate (default: 30)
+   --interval value, -i value               minutes to check if the channel is online (default: 1)
    --resolution value, -r value             preferred resolution (default: 1080)
    --resolution-fallback value, --rf value  fallback to 'up' (larger) or 'down' (smaller) resolution if preferred resolution is not available (default: "down")
    --filename-pattern value, --fp value     filename pattern for videos (default: "videos/{{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}{{if .Sequence}}_{{.Sequence}}{{end}}")

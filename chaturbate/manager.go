@@ -31,6 +31,7 @@ type Config struct {
 	ResolutionFallback string
 	SplitDuration      int
 	SplitFilesize      int
+	Interval           int
 }
 
 // Manager
@@ -99,6 +100,7 @@ func (m *Manager) CreateChannel(conf *Config) error {
 		Framerate:          conf.Framerate,
 		Resolution:         conf.Resolution,
 		ResolutionFallback: conf.ResolutionFallback,
+		Interval:           conf.Interval,
 		LastStreamedAt:     "-",
 		SegmentDuration:    0,
 		SplitDuration:      conf.SplitDuration,
@@ -176,6 +178,7 @@ func (m *Manager) SaveChannels() error {
 			FilenamePattern:    v.filenamePattern,
 			SplitDuration:      v.SplitDuration,
 			SplitFilesize:      v.SplitFilesize,
+			Interval:           v.Interval,
 		})
 	}
 	b, err := json.MarshalIndent(configs, "", "    ")
