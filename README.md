@@ -10,7 +10,7 @@ For Chaturbate-**only**, private/ticket stream is **unsupported**.
 
 ## Usage
 
-Download executable from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page.
+Download executable from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page (e.g., `windows_chatubrate-dvr.exe`).
 
 &nbsp;
 
