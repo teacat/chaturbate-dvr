@@ -215,7 +215,9 @@ func (w *Channel) mergeSegments() {
 			<-time.After(1 * time.Second)
 			continue
 		}
+		w.bufferLock.Lock()
 		buf, ok := w.buffer[w.bufferIndex]
+		w.bufferLock.Unlock()
 		if !ok {
 			segmentRetries++
 			<-time.After(time.Duration(segmentRetries) * time.Second)
