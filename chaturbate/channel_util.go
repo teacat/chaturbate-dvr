@@ -5,34 +5,28 @@ import (
 	"time"
 )
 
-type logType string
-
-const (
-	logTypeDebug   logType = "DEBUG"
-	logTypeInfo    logType = "INFO"
-	logTypeWarning logType = "WARN"
-	logTypeError   logType = "ERROR"
-)
-
 // log
-func (w *Channel) log(typ logType, message string, v ...interface{}) {
-	switch w.logType {
-	case logTypeInfo:
-		if typ == logTypeDebug {
+func (w *Channel) log(typ LogType, message string, v ...interface{}) {
+	// Check the global log level
+	currentLogLevel := GetGlobalLogLevel()
+
+	switch currentLogLevel {
+	case LogTypeInfo:
+		if typ == LogTypeDebug {
 			return
 		}
-	case logTypeWarning:
-		if typ == logTypeDebug || typ == logTypeInfo {
+	case LogTypeWarning:
+		if typ == LogTypeDebug || typ == LogTypeInfo {
 			return
 		}
-	case logTypeError:
-		if typ == logTypeDebug || typ == logTypeInfo || typ == logTypeWarning {
+	case LogTypeError:
+		if typ == LogTypeDebug || typ == LogTypeInfo || typ == LogTypeWarning {
 			return
 		}
 	}
 
-	updateLog := fmt.Sprintf("[%s] [%s] %s", time.Now().Format("2006-01-02 15:04:05"), typ, fmt.Errorf(message, v...))
-	consoleLog := fmt.Sprintf("[%s] [%s] [%s] %s", time.Now().Format("2006-01-02 15:04:05"), typ, w.Username, fmt.Errorf(message, v...))
+	updateLog := fmt.Sprintf("[%s] [%s] %s", time.Now().Format("2006-01-02 15:04:05"), typ, fmt.Sprintf(message, v...))
+	consoleLog := fmt.Sprintf("[%s] [%s] [%s] %s", time.Now().Format("2006-01-02 15:04:05"), typ, w.Username, fmt.Sprintf(message, v...))
 
 	update := &Update{
 		Username:        w.Username,
@@ -43,6 +37,7 @@ func (w *Channel) log(typ logType, message string, v ...interface{}) {
 		SegmentDuration: w.SegmentDuration,
 		SegmentFilesize: w.SegmentFilesize,
 	}
+
 	if w.file != nil {
 		update.Filename = w.file.Name()
 	}
