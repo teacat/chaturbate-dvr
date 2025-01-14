@@ -1,11 +1,12 @@
-FROM golang:latest
+FROM golang:1.23-alpine AS builder
+WORKDIR /workspace
 
+COPY ./ ./
+RUN go build -o chaturbate-dvr .
+
+FROM scratch AS runnable
 WORKDIR /usr/src/app
 
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+COPY --from=builder /workspace/chaturbate-dvr /chaturbate-dvr
 
-COPY . .
-RUN go build
-
-CMD [ "sh", "-c", "./chaturbate-dvr -u $USERNAME" ]
+ENTRYPOINT ["/chaturbate-dvr"]
