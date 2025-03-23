@@ -104,6 +104,16 @@ func main() {
 				Usage:   "minutes to check if the channel is online",
 				Value:   1,
 			},
+			&cli.StringFlag{
+				Name:	"cf-cookie",
+				Usage:   "Cloudflare cookie to bypass anti-bot page",
+				Value:   "",
+			},
+			&cli.StringFlag{
+				Name:  "user-agent",
+				Usage: "Custom user agent for when using cf-cookie",
+				Value: "",
+			},
 			//&cli.StringFlag{
 			//	Name:  "gui",
 			//	Usage: "enabling GUI, availables: 'no', 'web'",
@@ -119,6 +129,9 @@ func main() {
 
 func start(c *cli.Context) error {
 	fmt.Println(logo)
+	if c.String("cf-cookie") != "" && c.String("user-agent") == ""{
+		return fmt.Errorf("When using the cf-cookie option a user-agent MUST be supplied")
+	}
 
 	//if c.String("gui") == "web" {
 	if c.String("username") == "" {
@@ -135,6 +148,8 @@ func start(c *cli.Context) error {
 		SplitDuration:      c.Int("split-duration"),
 		SplitFilesize:      c.Int("split-filesize"),
 		Interval:           c.Int("interval"),
+		CFCookie:			c.String("cf-cookie"),
+		UserAgent:			c.String("user-agent"),
 	}); err != nil {
 		return err
 	}
@@ -159,7 +174,6 @@ func startWeb(c *cli.Context) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	guiUsername := c.String("gui-username")
 	guiPassword := c.String("gui-password")
 
