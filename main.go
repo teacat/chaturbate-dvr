@@ -31,7 +31,7 @@ const logo = `
 func main() {
 	app := &cli.App{
 		Name:    "chaturbate-dvr",
-		Version: "1.0.6",
+		Version: "1.0.7",
 		Usage:   "Records your favorite Chaturbate stream 😎🫵",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
@@ -90,7 +90,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:  "log-level",
-				Usage: "log level, availables: 'DEBUG', 'INFO', 'WARN', 'ERROR'",
+				Usage: "log level, available: 'DEBUG', 'INFO', 'WARN', 'ERROR'",
 				Value: "INFO",
 			},
 			&cli.StringFlag{
@@ -177,6 +177,10 @@ func startWeb(c *cli.Context) error {
 	guiUsername := c.String("gui-username")
 	guiPassword := c.String("gui-password")
 
+	logLevel := c.String("log-level")
+
+	chaturbate.InitGlobalLogLevel(chaturbate.LogType(logLevel))
+
 	var authorized = r.Group("/")
 	var authorizedApi = r.Group("/api")
 
@@ -200,6 +204,7 @@ func startWeb(c *cli.Context) error {
 	authorizedApi.GET("/listen_update", handler.NewListenUpdateHandler(m, c).Handle)
 	authorizedApi.POST("/get_settings", handler.NewGetSettingsHandler(c).Handle)
 	authorizedApi.POST("/terminate_program", handler.NewTerminateProgramHandler(c).Handle)
+	authorizedApi.POST("/update_log_level", handler.NewUpdateLogLevelHandler(c).Handle)
 
 	fmt.Printf("👋 Visit http://localhost:%s to use the Web UI\n", c.String("port"))
 

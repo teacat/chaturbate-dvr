@@ -98,7 +98,7 @@ func (m *Manager) CreateChannel(conf *Config) error {
 	}
 	c := &Channel{
 		Username:           conf.Username,
-		ChannelURL:         "https://chaturbate.com/" + conf.Username,
+		ChannelURL:         "https://chaturbate.global/" + conf.Username,
 		filenamePattern:    conf.FilenamePattern,
 		Framerate:          conf.Framerate,
 		Resolution:         conf.Resolution,
@@ -117,7 +117,7 @@ func (m *Manager) CreateChannel(conf *Config) error {
 		Logs:               []string{},
 		UpdateChannel:      make(chan *Update),
 		ResumeChannel:      make(chan bool),
-		logType:            logType(m.cli.String("log-level")),
+		LogType:            LogType(m.cli.String("log-level")),
 	}
 	go func() {
 		for update := range c.UpdateChannel {
@@ -129,7 +129,7 @@ func (m *Manager) CreateChannel(conf *Config) error {
 		}
 	}()
 	m.Channels[conf.Username] = c
-	c.log(logTypeInfo, "channel created")
+	c.log(LogTypeInfo, "channel created")
 	go c.Run()
 	return nil
 }
