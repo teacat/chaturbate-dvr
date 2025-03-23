@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teacat/chaturbate-dvr/chaturbate"
@@ -51,17 +52,27 @@ func NewListChannelsHandler(c *chaturbate.Manager, cli *cli.Context) *ListChanne
 // Handle
 //=======================================================
 
+// Handle processes the request to list channels, sorting by IsOnline.
 func (h *ListChannelsHandler) Handle(c *gin.Context) {
 	var req *ListChannelsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
+
+	// Fetch channels
 	channels, err := h.chaturbate.ListChannels()
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
+	// Sort by IsOnline: online channels first, then offline
+	sort.SliceStable(channels, func(i, j int) bool {
+		return channels[i].IsOnline && !channels[j].IsOnline
+	})
+
+	// Populate response
 	resp := &ListChannelsResponse{
 		Channels: make([]*ListChannelsResponseChannel, len(channels)),
 	}
@@ -81,5 +92,7 @@ func (h *ListChannelsHandler) Handle(c *gin.Context) {
 			Logs:            channel.Logs,
 		}
 	}
+
+	// Send the response
 	c.JSON(http.StatusOK, resp)
 }

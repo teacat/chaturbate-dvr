@@ -27,6 +27,8 @@ type Channel struct {
 	filenamePattern    string
 	LastStreamedAt     string
 	Interval           int
+	CFCookie		   string
+	UserAgent		   string
 	Framerate          int
 	Resolution         int
 	ResolutionFallback string
@@ -38,7 +40,7 @@ type Channel struct {
 	IsPaused           bool
 	isStopped          bool
 	Logs               []string
-	logType            logType
+	LogType            LogType
 
 	bufferLock   sync.Mutex
 	buffer       map[int][]byte
@@ -60,33 +62,34 @@ type Channel struct {
 
 // Run
 func (w *Channel) Run() {
+
 	if w.Username == "" {
-		w.log(logTypeError, "username is empty, use `-u USERNAME` to specify")
+		w.log(LogTypeError, "username is empty, use `-u USERNAME` to specify")
 		return
 	}
 
 	for {
 		if w.IsPaused {
-			w.log(logTypeInfo, "channel is paused")
+			w.log(LogTypeInfo, "channel is paused")
 			<-w.ResumeChannel // blocking
-			w.log(logTypeInfo, "channel is resumed")
+			w.log(LogTypeInfo, "channel is resumed")
 		}
 		if w.isStopped {
-			w.log(logTypeInfo, "channel is stopped")
+			w.log(LogTypeInfo, "channel is stopped")
 			break
 		}
 
 		body, err := w.requestChannelBody()
 		if err != nil {
-			w.log(logTypeError, "body request error: %w", err)
+			w.log(LogTypeError, "body request error: %v", err)
 		}
 		if strings.Contains(body, "playlist.m3u8") {
 			w.IsOnline = true
 			w.LastStreamedAt = time.Now().Format("2006-01-02 15:04:05")
-			w.log(logTypeInfo, "channel is online, start fetching...")
+			w.log(LogTypeInfo, "channel is online, start fetching...")
 
 			if err := w.record(body); err != nil { // blocking
-				w.log(logTypeError, "record error: %w", err)
+				w.log(LogTypeError, "record error: %v", err)
 			}
 			continue // this excutes when recording is over/interrupted
 		}
@@ -95,10 +98,13 @@ func (w *Channel) Run() {
 		// close file when offline so user can move/delete it
 		if w.file != nil {
 			if err := w.releaseFile(); err != nil {
-				w.log(logTypeError, "release file: %w", err)
+				w.log(LogTypeError, "release file: %v", err)
 			}
 		}
-
+		if strings.Contains(body, "<title>Just a moment...</title>") {
+			w.log(logTypeError, "Cloudflare anti-bot page detected, Try providing cf-cookie and user-agent (Check GitHub for instructions)... Exiting")
+			os.Exit(1)
+		}
 		w.log(logTypeInfo, "channel is offline, check again %d min(s) later", w.Interval)
 		<-time.After(time.Duration(w.Interval) * time.Minute) // minutes cooldown to check online status
 	}

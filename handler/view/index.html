@@ -38,7 +38,7 @@
                         <div class="label">Channel Username</div>
                         <div class="content">
                             <div class="ts-input is-start-labeled">
-                                <div class="label">chaturbate.com/</div>
+                                <div class="label">chaturbate.global/</div>
                                 <input type="text" autofocus x-model="form_data.username" />
                             </div>
                             <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names. For example, "channel1,channel2,channel3".</div>
@@ -175,7 +175,7 @@
         <!-- / Create Dialog -->
 
         <!-- Main Section -->
-        <div class="ts-container is-narrow has-vertically-padded-big">
+        <div class="ts-container has-vertically-padded-big">
             <!-- Header -->
             <div class="ts-grid is-bottom-aligned">
                 <div class="column is-fluid">
@@ -184,6 +184,14 @@
                 </div>
                 <div class="column">
                     <div class="ts-wrap">
+                        <div class="ts-select">
+                            <select x-model="settings.log_level">
+                                <option>DEBUG</option>
+                                <option>INFO</option>
+                                <option>WARN</option>
+                                <option>ERROR</option>
+                            </select>
+                        </div>
                         <button class="ts-button is-outlined is-negative is-start-icon" x-on:click="terminateProgram()">
                             <span class="ts-icon is-hand-icon"></span>
                             Terminate
@@ -219,17 +227,41 @@
             <!-- Divider -->
             <template x-if="channels.length > 0">
                 <div class="ts-divider is-start-text is-section">
-                    <span class="ts-text is-description"><span x-text="channels.length"></span> channel(s) are being recorded</span>
+                    <span class="ts-text is-description"
+                        ><span x-text="channels.length"></span>
+                        <span x-show="channels.length &lt; 2" style="display: none"> channel is</span>
+                        <span x-show="channels.length &gt; 1"> channels are</span> being recorded
+                    </span>
+                    <span class="ts-text is-description">
+                        <span x-text="channels.filter(channel => channel.is_online).length"></span> online /
+                        <span x-text="channels.filter(channel => !channel.is_online).length"></span> offline
+                    </span>
                 </div>
             </template>
             <!-- / Divider -->
-
+            <!-- Pagination Controls -->
+            <div class="ts-pagination is-fluid" style="margin-bottom: 1rem">
+                <a class="item" x-on:click="goToPage(1)" :class="{ 'is-disabled': currentPage === 1 }">&laquo;</a>
+                <template x-for="page in totalPages" :key="page">
+                    <a class="item" x-on:click="goToPage(page)" :class="{ 'is-active': currentPage === page }" x-text="page"></a>
+                </template>
+                <a class="item" x-on:click="goToPage(totalPages)" :class="{ 'is-disabled': currentPage === totalPages }">&raquo;</a>
+            </div>
+            <!-- / Pagination controls -->
             <div class="ts-wrap is-vertical is-relaxed">
                 <!-- Channel -->
-                <template x-for="channel in channels" :key="channel.username">
-                    <div class="ts-box is-horizontal">
+                <template x-for="channel in paginatedChannels" :key="channel.username">
+                    <!-- <div class="ts-box is-horizontal"> -->
+                    <div
+                        class="ts-box is-horizontal"
+                        :class="{
+                                'is-positive is-top-indicated': channel.is_online && !channel.is_paused,
+                                'is-negative is-top-indicated': !channel.is_online && !channel.is_paused,
+                                'is-top-indicated': channel.is_paused
+                            }"
+                    >
                         <!-- Left Section -->
-                        <div class="ts-content is-padded" style="flex: 1.8; display: flex; flex-direction: column">
+                        <div class="ts-content is-padded" style="flex: 1.25; display: flex; flex-direction: column">
                             <!-- Header -->
                             <div class="ts-grid is-middle-aligned">
                                 <div class="column is-fluid">

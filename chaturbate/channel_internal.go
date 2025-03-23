@@ -18,14 +18,30 @@ import (
 
 // requestChannelBody requests the channel page and returns the body.
 func (w *Channel) requestChannelBody() (string, error) {
+
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: transport}
 
-	resp, err := client.Get(w.ChannelURL)
+	req, err := http.NewRequest("GET", w.ChannelURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("client get: %w", err)
+		return "", fmt.Errorf("new request: %w", err)
+	}
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("client do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -33,7 +49,7 @@ func (w *Channel) requestChannelBody() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("read body: %w", err)
 	}
-
+ 
 	return string(body), nil
 }
 
@@ -100,9 +116,25 @@ func (w *Channel) resolveSource(body string) (string, string, error) {
 	}
 	client := &http.Client{Transport: transport}
 
-	resp, err := client.Get(roomData.HLSSource)
+	req, err := http.NewRequest("GET", roomData.HLSSource, nil)
 	if err != nil {
-		return "", "", fmt.Errorf("client get: %w", err)
+		return "", "", fmt.Errorf("new request: %w", err)
+	}
+
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", "", fmt.Errorf("client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
@@ -175,17 +207,17 @@ func (w *Channel) resolveSource(body string) (string, string, error) {
 	if variant == nil {
 		return "", "", fmt.Errorf("no available resolution")
 	}
-	w.log(logTypeInfo, "resolution %dp is used", variant.width)
+	w.log(LogTypeInfo, "resolution %dp is used", variant.width)
 
 	url, ok := variant.framerate[w.Framerate]
 	// If the framerate is not found, fallback to the first found framerate, this block pretends there're only 30 and 60 fps.
 	// no complex logic here, im lazy.
 	if ok {
-		w.log(logTypeInfo, "framerate %dfps is used", w.Framerate)
+		w.log(LogTypeInfo, "framerate %dfps is used", w.Framerate)
 	} else {
 		for k, v := range variant.framerate {
 			url = v
-			w.log(logTypeWarning, "framerate %dfps not found, fallback to %dfps", w.Framerate, k)
+			w.log(LogTypeWarning, "framerate %dfps not found, fallback to %dfps", w.Framerate, k)
 			w.Framerate = k
 			break
 		}
@@ -200,62 +232,83 @@ func (w *Channel) resolveSource(body string) (string, string, error) {
 // and it merges the segments from buffer to the file.
 func (w *Channel) mergeSegments() {
 	var segmentRetries int
+	startTime := time.Now() // Track the start time of the current segment.
 
 	for {
 		if w.IsPaused || w.isStopped {
 			break
 		}
+
+		// Handle segment retries if not found.
 		if segmentRetries > 5 {
-			w.log(logTypeWarning, "segment #%d not found in buffer, skipped", w.bufferIndex)
+			w.log(LogTypeWarning, "segment #%d not found in buffer, skipped", w.bufferIndex)
 			w.bufferIndex++
 			segmentRetries = 0
 			continue
 		}
+
+		// If buffer is empty, wait and retry.
 		if len(w.buffer) == 0 {
-			<-time.After(1 * time.Second)
+			time.Sleep(1 * time.Second)
 			continue
 		}
+
+		// Retrieve segment from buffer.
 		w.bufferLock.Lock()
 		buf, ok := w.buffer[w.bufferIndex]
 		w.bufferLock.Unlock()
+
 		if !ok {
 			segmentRetries++
-			<-time.After(time.Duration(segmentRetries) * time.Second)
+			time.Sleep(time.Duration(segmentRetries) * time.Second)
 			continue
 		}
+
+		// Write the segment to the file.
 		lens, err := w.file.Write(buf)
 		if err != nil {
-			w.log(logTypeError, "segment #%d written error: %v", w.bufferIndex, err)
+			w.log(LogTypeError, "segment #%d written error: %v", w.bufferIndex, err)
 			w.retries++
 			continue
 		}
-		w.log(logTypeInfo, "segment #%d written", w.bufferIndex)
-		w.log(logTypeDebug, "duration: %s, size: %s", DurationStr(w.SegmentDuration), ByteStr(w.SegmentFilesize))
 
+		// Update segment size and log progress.
 		w.SegmentFilesize += lens
-		segmentRetries = 0
+		w.log(LogTypeInfo, "segment #%d written", w.bufferIndex)
+		w.log(LogTypeDebug, "duration: %s, size: %s", DurationStr(w.SegmentDuration), ByteStr(w.SegmentFilesize))
 
+		// Check if the file size limit has been reached.
 		if w.SplitFilesize > 0 && w.SegmentFilesize >= w.SplitFilesize*1024*1024 {
-			w.log(logTypeInfo, "filesize exceeded, creating new file")
+			w.log(LogTypeInfo, "filesize exceeded, creating new file")
 
-			if err := w.nextFile(); err != nil {
-				w.log(logTypeError, "next file error: %v", err)
+			if err := w.nextFile(startTime); err != nil {
+				w.log(LogTypeError, "next file error: %v", err)
 				break
 			}
-		} else if w.SplitDuration > 0 && w.SegmentDuration >= w.SplitDuration*60 {
-			w.log(logTypeInfo, "duration exceeded, creating new file")
 
-			if err := w.nextFile(); err != nil {
-				w.log(logTypeError, "next file error: %v", err)
-				break
-			}
+			startTime = time.Now() // Reset start time for the new segment.
 		}
 
+		// Check if the duration limit has been reached.
+		elapsed := int(time.Since(startTime).Minutes())
+		if w.SplitDuration > 0 && elapsed >= w.SplitDuration {
+			w.log(LogTypeInfo, "duration exceeded, creating new file")
+
+			if err := w.nextFile(startTime); err != nil {
+				w.log(LogTypeError, "next file error: %v", err)
+				break
+			}
+
+			startTime = time.Now() // Reset start time for the new segment.
+		}
+
+		// Remove the processed segment from the buffer.
 		w.bufferLock.Lock()
 		delete(w.buffer, w.bufferIndex)
 		w.bufferLock.Unlock()
 
-		w.bufferIndex++
+		w.bufferIndex++    // Move to the next segment.
+		segmentRetries = 0 // Reset retries for the next segment.
 	}
 }
 
@@ -276,7 +329,7 @@ func (w *Channel) fetchSegments() {
 				break
 			}
 
-			w.log(logTypeError, "segment list error, will try again [%d/10]: %v", disconnectRetries, err)
+			w.log(LogTypeError, "segment list error, will try again [%d/10]: %v", disconnectRetries, err)
 			disconnectRetries++
 
 			<-time.After(time.Duration(wait) * time.Second)
@@ -284,7 +337,7 @@ func (w *Channel) fetchSegments() {
 		}
 
 		if disconnectRetries > 0 {
-			w.log(logTypeInfo, "channel is back online!")
+			w.log(LogTypeInfo, "channel is back online!")
 			w.IsOnline = true
 			disconnectRetries = 0
 		}
@@ -296,7 +349,7 @@ func (w *Channel) fetchSegments() {
 
 			go func(index int, uri string) {
 				if err := w.requestSegment(uri, index); err != nil {
-					w.log(logTypeError, "segment #%d request error, ignored: %v", index, err)
+					w.log(LogTypeError, "segment #%d request error, ignored: %v", index, err)
 					return
 				}
 			}(w.segmentIndex, v.URI)
@@ -319,9 +372,25 @@ func (w *Channel) requestChunks() ([]*m3u8.MediaSegment, float64, error) {
 		return nil, 0, fmt.Errorf("channel seems to be paused?")
 	}
 
-	resp, err := client.Get(w.sourceURL)
+	req, err := http.NewRequest("GET", w.sourceURL, nil)
 	if err != nil {
-		return nil, 3, fmt.Errorf("client get: %w", err)
+		return nil, 0, fmt.Errorf("new request: %w", err)
+	}
+
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 3, fmt.Errorf("client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
@@ -352,6 +421,7 @@ func (w *Channel) requestChunks() ([]*m3u8.MediaSegment, float64, error) {
 	return chunks, playlist.TargetDuration, nil
 }
 
+
 // requestSegment requests the specific single segment and put it into the buffer.
 // the mergeSegments function will merge the segment from buffer to the file in the backgrond.
 func (w *Channel) requestSegment(url string, index int) error {
@@ -364,9 +434,25 @@ func (w *Channel) requestSegment(url string, index int) error {
 		return fmt.Errorf("channel seems to be paused?")
 	}
 
-	resp, err := client.Get(w.rootURL + url)
+	req, err := http.NewRequest("GET", w.rootURL+url, nil)
 	if err != nil {
-		return fmt.Errorf("client get: %w", err)
+		return fmt.Errorf("new request: %w", err)
+	}
+
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}	
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("received status code %d", resp.StatusCode)
@@ -379,7 +465,7 @@ func (w *Channel) requestSegment(url string, index int) error {
 		return fmt.Errorf("read body: %w", err)
 	}
 
-	w.log(logTypeDebug, "segment #%d fetched", index)
+	w.log(LogTypeDebug, "segment #%d fetched", index)
 
 	w.bufferLock.Lock()
 	w.buffer[index] = body
@@ -387,3 +473,4 @@ func (w *Channel) requestSegment(url string, index int) error {
 
 	return nil
 }
+

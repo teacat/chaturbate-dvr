@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v2"
 )
@@ -32,6 +31,8 @@ type Config struct {
 	SplitDuration      int
 	SplitFilesize      int
 	Interval           int
+	CFCookie		   string
+	UserAgent		   string
 }
 
 // Manager
@@ -39,10 +40,12 @@ type Manager struct {
 	cli      *cli.Context
 	Channels map[string]*Channel
 	Updates  map[string]chan *Update
+
 }
 
 // NewManager
 func NewManager(c *cli.Context) *Manager {
+
 	return &Manager{
 		cli:      c,
 		Channels: map[string]*Channel{},
@@ -95,12 +98,14 @@ func (m *Manager) CreateChannel(conf *Config) error {
 	}
 	c := &Channel{
 		Username:           conf.Username,
-		ChannelURL:         "https://chaturbate.com/" + conf.Username,
+		ChannelURL:         "https://chaturbate.global/" + conf.Username,
 		filenamePattern:    conf.FilenamePattern,
 		Framerate:          conf.Framerate,
 		Resolution:         conf.Resolution,
 		ResolutionFallback: conf.ResolutionFallback,
 		Interval:           conf.Interval,
+		CFCookie:		    m.cli.String("cf-cookie"),
+		UserAgent:			m.cli.String("user-agent"),
 		LastStreamedAt:     "-",
 		SegmentDuration:    0,
 		SplitDuration:      conf.SplitDuration,
@@ -112,7 +117,7 @@ func (m *Manager) CreateChannel(conf *Config) error {
 		Logs:               []string{},
 		UpdateChannel:      make(chan *Update),
 		ResumeChannel:      make(chan bool),
-		logType:            logType(m.cli.String("log-level")),
+		LogType:            LogType(m.cli.String("log-level")),
 	}
 	go func() {
 		for update := range c.UpdateChannel {
@@ -124,7 +129,7 @@ func (m *Manager) CreateChannel(conf *Config) error {
 		}
 	}()
 	m.Channels[conf.Username] = c
-	c.log(logTypeInfo, "channel created")
+	c.log(LogTypeInfo, "channel created")
 	go c.Run()
 	return nil
 }

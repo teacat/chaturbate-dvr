@@ -90,7 +90,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:  "log-level",
-				Usage: "log level, availables: 'DEBUG', 'INFO', 'WARN', 'ERROR'",
+				Usage: "log level, available: 'DEBUG', 'INFO', 'WARN', 'ERROR'",
 				Value: "INFO",
 			},
 			&cli.StringFlag{
@@ -103,6 +103,16 @@ func main() {
 				Aliases: []string{"i"},
 				Usage:   "minutes to check if the channel is online",
 				Value:   1,
+			},
+			&cli.StringFlag{
+				Name:	"cf-cookie",
+				Usage:   "Cloudflare cookie to bypass anti-bot page",
+				Value:   "",
+			},
+			&cli.StringFlag{
+				Name:  "user-agent",
+				Usage: "Custom user agent for when using cf-cookie",
+				Value: "",
 			},
 			//&cli.StringFlag{
 			//	Name:  "gui",
@@ -119,6 +129,9 @@ func main() {
 
 func start(c *cli.Context) error {
 	fmt.Println(logo)
+	if c.String("cf-cookie") != "" && c.String("user-agent") == ""{
+		return fmt.Errorf("When using the cf-cookie option a user-agent MUST be supplied")
+	}
 
 	//if c.String("gui") == "web" {
 	if c.String("username") == "" {
@@ -135,6 +148,8 @@ func start(c *cli.Context) error {
 		SplitDuration:      c.Int("split-duration"),
 		SplitFilesize:      c.Int("split-filesize"),
 		Interval:           c.Int("interval"),
+		CFCookie:			c.String("cf-cookie"),
+		UserAgent:			c.String("user-agent"),
 	}); err != nil {
 		return err
 	}
@@ -159,9 +174,12 @@ func startWeb(c *cli.Context) error {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	guiUsername := c.String("gui-username")
 	guiPassword := c.String("gui-password")
+
+	logLevel := c.String("log-level")
+
+	chaturbate.InitGlobalLogLevel(chaturbate.LogType(logLevel))
 
 	var authorized = r.Group("/")
 	var authorizedApi = r.Group("/api")
@@ -186,6 +204,7 @@ func startWeb(c *cli.Context) error {
 	authorizedApi.GET("/listen_update", handler.NewListenUpdateHandler(m, c).Handle)
 	authorizedApi.POST("/get_settings", handler.NewGetSettingsHandler(c).Handle)
 	authorizedApi.POST("/terminate_program", handler.NewTerminateProgramHandler(c).Handle)
+	authorizedApi.POST("/update_log_level", handler.NewUpdateLogLevelHandler(c).Handle)
 
 	fmt.Printf("👋 Visit http://localhost:%s to use the Web UI\n", c.String("port"))
 

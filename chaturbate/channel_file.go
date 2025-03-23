@@ -9,11 +9,10 @@ import (
 	"time"
 )
 
-// filename
+// filename generates the filename based on the session pattern and current split index.
 func (w *Channel) filename() (string, error) {
-	data := w.sessionPattern
-	if data == nil {
-		data = map[string]any{
+	if w.sessionPattern == nil {
+		w.sessionPattern = map[string]any{
 			"Username": w.Username,
 			"Year":     time.Now().Format("2006"),
 			"Month":    time.Now().Format("01"),
@@ -23,69 +22,82 @@ func (w *Channel) filename() (string, error) {
 			"Second":   time.Now().Format("05"),
 			"Sequence": 0,
 		}
-		w.sessionPattern = data
-	} else {
-		data["Sequence"] = w.splitIndex
 	}
-	t, err := template.New("filename").Parse(w.filenamePattern)
-	if err != nil {
-		return "", err
-	}
+
+	w.sessionPattern["Sequence"] = w.splitIndex
+
 	var buf bytes.Buffer
-	if err := t.Execute(&buf, data); err != nil {
-		return "", err
+	tmpl, err := template.New("filename").Parse(w.filenamePattern)
+	if err != nil {
+		return "", fmt.Errorf("filename pattern error: %w", err)
 	}
+	if err := tmpl.Execute(&buf, w.sessionPattern); err != nil {
+		return "", fmt.Errorf("template execution error: %w", err)
+	}
+
 	return buf.String(), nil
 }
 
-// newFile
+// newFile creates a new file and prepares it for writing stream data.
 func (w *Channel) newFile() error {
 	filename, err := w.filename()
 	if err != nil {
-		return fmt.Errorf("filename pattern error: %w", err)
+		return err
 	}
+
 	if err := os.MkdirAll(filepath.Dir(filename), 0777); err != nil {
 		return fmt.Errorf("create folder: %w", err)
 	}
+
 	file, err := os.OpenFile(filename+".ts", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0777)
 	if err != nil {
 		return fmt.Errorf("cannot open file: %s: %w", filename, err)
 	}
-	w.log(logTypeInfo, "the stream will be saved as %s.ts", filename)
+
+	w.log(LogTypeInfo, "the stream will be saved as %s.ts", filename)
 	w.file = file
 	return nil
 }
 
-// releaseFile
+// releaseFile closes the current file and removes it if empty.
 func (w *Channel) releaseFile() error {
 	if w.file == nil {
 		return nil
 	}
-	// close the file to remove it
+
 	if err := w.file.Close(); err != nil {
 		return fmt.Errorf("close file: %s: %w", w.file.Name(), err)
 	}
-	// remove it if it was empty
-	if w.SegmentFilesize == 0 {
-		w.log(logTypeInfo, "%s was removed because it was empty", w.file.Name())
 
+	if w.SegmentFilesize == 0 {
+		w.log(LogTypeInfo, "%s was removed because it was empty", w.file.Name())
 		if err := os.Remove(w.file.Name()); err != nil {
 			return fmt.Errorf("remove zero file: %s: %w", w.file.Name(), err)
 		}
 	}
+
 	w.file = nil
 	return nil
 }
 
-// nextFile
-func (w *Channel) nextFile() error {
+// nextFile handles the transition to a new file segment, ensuring correct timing.
+func (w *Channel) nextFile(startTime time.Time) error {
+	// Release the current file before creating a new one.
 	if err := w.releaseFile(); err != nil {
-		w.log(logTypeError, "release file: %w", err)
+		w.log(LogTypeError, "release file: %v", err)
+		return err
 	}
 
+	// Increment the split index for the next file.
 	w.splitIndex++
-	w.SegmentFilesize = 0
-	w.SegmentDuration = 0
 
+	// Reset segment data.
+	w.SegmentFilesize = 0
+
+	// Calculate the actual segment duration using the elapsed time.
+	elapsed := int(time.Since(startTime).Minutes())
+	w.SegmentDuration = elapsed
+
+	// Create the new file.
 	return w.newFile()
 }
