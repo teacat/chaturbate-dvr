@@ -27,6 +27,8 @@ type Channel struct {
 	filenamePattern    string
 	LastStreamedAt     string
 	Interval           int
+	CFCookie		   string
+	UserAgent		   string
 	Framerate          int
 	Resolution         int
 	ResolutionFallback string
@@ -60,6 +62,7 @@ type Channel struct {
 
 // Run
 func (w *Channel) Run() {
+
 	if w.Username == "" {
 		w.log(logTypeError, "username is empty, use `-u USERNAME` to specify")
 		return
@@ -98,7 +101,10 @@ func (w *Channel) Run() {
 				w.log(logTypeError, "release file: %w", err)
 			}
 		}
-
+		if strings.Contains(body, "<title>Just a moment...</title>") {
+			w.log(logTypeError, "Cloudflare anti-bot page detected, Try providing cf-cookie and user-agent (Check GitHub for instructions)... Exiting")
+			os.Exit(1)
+		}
 		w.log(logTypeInfo, "channel is offline, check again %d min(s) later", w.Interval)
 		<-time.After(time.Duration(w.Interval) * time.Minute) // minutes cooldown to check online status
 	}
