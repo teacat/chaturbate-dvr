@@ -18,14 +18,30 @@ import (
 
 // requestChannelBody requests the channel page and returns the body.
 func (w *Channel) requestChannelBody() (string, error) {
+
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: transport}
 
-	resp, err := client.Get(w.ChannelURL)
+	req, err := http.NewRequest("GET", w.ChannelURL, nil)
 	if err != nil {
-		return "", fmt.Errorf("client get: %w", err)
+		return "", fmt.Errorf("new request: %w", err)
+	}
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("client do: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -33,7 +49,7 @@ func (w *Channel) requestChannelBody() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("read body: %w", err)
 	}
-
+ 
 	return string(body), nil
 }
 
@@ -100,9 +116,25 @@ func (w *Channel) resolveSource(body string) (string, string, error) {
 	}
 	client := &http.Client{Transport: transport}
 
-	resp, err := client.Get(roomData.HLSSource)
+	req, err := http.NewRequest("GET", roomData.HLSSource, nil)
 	if err != nil {
-		return "", "", fmt.Errorf("client get: %w", err)
+		return "", "", fmt.Errorf("new request: %w", err)
+	}
+
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", "", fmt.Errorf("client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
@@ -196,7 +228,8 @@ func (w *Channel) resolveSource(body string) (string, string, error) {
 	return rootURL, sourceURL, nil
 }
 
-// mergeSegments runs in the background and merges segments from the buffer to the file.
+// mergeSegments is a async function that runs in background for the channel,
+// and it merges the segments from buffer to the file.
 func (w *Channel) mergeSegments() {
 	var segmentRetries int
 	startTime := time.Now() // Track the start time of the current segment.
@@ -339,9 +372,25 @@ func (w *Channel) requestChunks() ([]*m3u8.MediaSegment, float64, error) {
 		return nil, 0, fmt.Errorf("channel seems to be paused?")
 	}
 
-	resp, err := client.Get(w.sourceURL)
+	req, err := http.NewRequest("GET", w.sourceURL, nil)
 	if err != nil {
-		return nil, 3, fmt.Errorf("client get: %w", err)
+		return nil, 0, fmt.Errorf("new request: %w", err)
+	}
+
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 3, fmt.Errorf("client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		switch resp.StatusCode {
@@ -372,6 +421,7 @@ func (w *Channel) requestChunks() ([]*m3u8.MediaSegment, float64, error) {
 	return chunks, playlist.TargetDuration, nil
 }
 
+
 // requestSegment requests the specific single segment and put it into the buffer.
 // the mergeSegments function will merge the segment from buffer to the file in the backgrond.
 func (w *Channel) requestSegment(url string, index int) error {
@@ -384,9 +434,25 @@ func (w *Channel) requestSegment(url string, index int) error {
 		return fmt.Errorf("channel seems to be paused?")
 	}
 
-	resp, err := client.Get(w.rootURL + url)
+	req, err := http.NewRequest("GET", w.rootURL+url, nil)
 	if err != nil {
-		return fmt.Errorf("client get: %w", err)
+		return fmt.Errorf("new request: %w", err)
+	}
+
+	if w.CFCookie != "" {
+	cookie := &http.Cookie{
+		Name:  "cf_clearance",
+		Value: w.CFCookie,
+	}
+
+	req.AddCookie(cookie)
+	}
+	if w.UserAgent != "" {
+	req.Header.Set("User-Agent", w.UserAgent)
+	}	
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("client do: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("received status code %d", resp.StatusCode)
@@ -407,3 +473,4 @@ func (w *Channel) requestSegment(url string, index int) error {
 
 	return nil
 }
+

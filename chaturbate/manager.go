@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"os"
-
 	"github.com/google/uuid"
 	"github.com/urfave/cli/v2"
 )
@@ -32,6 +31,8 @@ type Config struct {
 	SplitDuration      int
 	SplitFilesize      int
 	Interval           int
+	CFCookie		   string
+	UserAgent		   string
 }
 
 // Manager
@@ -39,10 +40,12 @@ type Manager struct {
 	cli      *cli.Context
 	Channels map[string]*Channel
 	Updates  map[string]chan *Update
+
 }
 
 // NewManager
 func NewManager(c *cli.Context) *Manager {
+
 	return &Manager{
 		cli:      c,
 		Channels: map[string]*Channel{},
@@ -101,6 +104,8 @@ func (m *Manager) CreateChannel(conf *Config) error {
 		Resolution:         conf.Resolution,
 		ResolutionFallback: conf.ResolutionFallback,
 		Interval:           conf.Interval,
+		CFCookie:		    m.cli.String("cf-cookie"),
+		UserAgent:			m.cli.String("user-agent"),
 		LastStreamedAt:     "-",
 		SegmentDuration:    0,
 		SplitDuration:      conf.SplitDuration,

@@ -106,6 +106,8 @@ GLOBAL OPTIONS:
    --split-filesize value, --sf value       size in MB to split each video into segments ('0' to disable) (default: 0)
    --log-level value                        log level, availables: 'DEBUG', 'INFO', 'WARN', 'ERROR' (default: "INFO")
    --port value                             port to expose the web interface and API (default: "8080")
+   --cf-cookie value                        Cloudflare cookie to bypass anti-bot page
+   --user-agent value                       Custom user agent for when using cf-cookie
    --help, -h                               show help
    --version, -v                            print the version
 ```
@@ -206,6 +208,12 @@ If the error still occur, run **Command Prompt** as Administrator, and type `net
 **Q: `A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.`**
 
 A: Your network is unstable or being blocked by Chaturbate, the program can't help with the network issue. Usually happened when you are using VPN or Proxy.
+
+&nbsp;
+
+**Q: `I'm receiving a message about CloudFlare anti-bot, what do I need to do?`**
+
+A: You need to successfully pass the CloudFlare anti-bot check and retrieve the cf_clearance Cookie that is set in the browser after successfully passing the check. This MUST be done from the same IP address and the same User-Agent string MUST be provided to chaturbate-dvr. Provide the cookie value and User-Agent string with the --cf-cookie and --user-agent command line options. The Cookie does expire, but it looks like it's Age is at ~1 year.
 
 &nbsp;
 
