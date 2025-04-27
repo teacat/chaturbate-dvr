@@ -102,10 +102,10 @@ func (w *Channel) Run() {
 			}
 		}
 		if strings.Contains(body, "<title>Just a moment...</title>") {
-			w.log(logTypeError, "Cloudflare anti-bot page detected, Try providing cf-cookie and user-agent (Check GitHub for instructions)... Exiting")
+			w.log(LogTypeError, "Cloudflare anti-bot page detected, Try providing cf-cookie and user-agent (Check GitHub for instructions)... Exiting")
 			os.Exit(1)
 		}
-		w.log(logTypeInfo, "channel is offline, check again %d min(s) later", w.Interval)
+		w.log(LogTypeInfo, "channel is offline, check again %d min(s) later", w.Interval)
 		<-time.After(time.Duration(w.Interval) * time.Minute) // minutes cooldown to check online status
 	}
 }
