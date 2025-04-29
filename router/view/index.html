@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" class="is-secondary">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocas/5.0.1/tocas.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tocas/5.0.1/tocas.min.js"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+        <script src="/static/htmx.min.js" crossorigin="anonymous"></script>
+        <script src="/static/sse.js" crossorigin="anonymous"></script>
+        <title>Chaturbate DVR</title>
+    </head>
+
+    <body hx-ext="sse">
+        <!-- Main Section -->
+        <div class="ts-container has-vertically-padded-big" style="--width: 990px">
+            <!-- Header -->
+            <div class="ts-grid is-bottom-aligned">
+                <div class="column is-fluid">
+                    <div class="ts-header is-huge is-uppercased is-heavy has-leading-small">Chaturbate DVR</div>
+                    <div class="ts-text is-description is-bold">VERSION {{ .Config.Version }}</div>
+                </div>
+                <div class="column">
+                    <button class="ts-button is-start-icon is-outlined" data-dialog="settings-dialog">
+                        <span class="ts-icon is-gear-icon"></span>
+                        Settings
+                    </button>
+                </div>
+                <div class="column">
+                    <button class="ts-button is-start-icon" data-dialog="create-dialog">
+                        <span class="ts-icon is-plus-icon"></span>
+                        Add Channel
+                    </button>
+                </div>
+            </div>
+
+            {{ if not .Channels }}
+            <!-- Blankslate -->
+            <div class="ts-divider has-vertically-spaced-large"></div>
+            <div class="ts-blankslate">
+                <span class="ts-icon is-eye-low-vision-icon"></span>
+                <div class="header">No channels are currently recording</div>
+                <div class="description">Add a new Chaturbate channel to start recording.</div>
+                <div class="action">
+                    <button class="ts-button is-start-icon" data-dialog="create-dialog">
+                        <span class="ts-icon is-plus-icon"></span>
+                        Add Channel
+                    </button>
+                </div>
+            </div>
+            <!-- / Blankslate -->
+            {{ else }}
+
+            <!-- Channels -->
+            <div class="ts-wrap is-vertical has-top-spaced-large" sse-connect="/updates?stream=updates">
+                {{ range .Channels }}
+                <div class="ts-box is-horizontal">
+                    <div class="ts-content is-padded" style="flex: 1; gap: 0.8rem; display: flex; flex-direction: column">
+                        <!-- Logs -->
+                        <div class="ts-input" style="flex: 1">
+                            <textarea class="has-full-height" readonly sse-swap="{{ .Username }}-log" style="scrollbar-width: thin">{{ range .Logs }}{{ . }}&NewLine;{{ end }}</textarea>
+                        </div>
+                        <div>
+                            <label class="ts-switch is-small" style="display: flex">
+                                <input type="checkbox" checked />
+                                Auto-Update & Scroll Logs
+                            </label>
+                        </div>
+                        <!-- / Logs -->
+                    </div>
+                    <!-- / Left Section -->
+
+                    <!-- Info Section -->
+                    <div sse-swap="{{ .Username }}-info" class="ts-content is-padded has-break-all" style="width: 400px; line-height: 1.45; padding-left: 0">
+                        {{ template "channel_info" . }}
+                    </div>
+                    <!-- / Info Section -->
+                </div>
+
+                {{ end }}
+            </div>
+            <!-- / Channels -->
+            {{ end }}
+        </div>
+
+        <!-- Settings Dialog -->
+        <dialog id="settings-dialog" class="ts-modal" style="--width: 680px">
+            <div class="content">
+                <form action="/update_config" method="POST">
+                    <div class="ts-content is-horizontally-padded is-secondary">
+                        <div class="ts-grid">
+                            <div class="column is-fluid">
+                                <div class="ts-header">Settings</div>
+                            </div>
+                            <div class="column">
+                                <button type="reset" class="ts-close is-rounded is-large is-secondary" data-dialog="settings-dialog"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ts-divider"></div>
+
+                    <div class="ts-content is-vertically-padded">
+                        <!-- Cookies -->
+                        <div class="ts-control is-wide">
+                            <div class="label">Cookies</div>
+                            <div class="content">
+                                <div class="ts-input">
+                                    <textarea name="cookies" rows="5" placeholder="Paste your cookies here">{{ .Config.Cookies }}</textarea>
+                                </div>
+                                <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names, e.g. "channel1, channel2, channel3".</div>
+                            </div>
+                        </div>
+
+                        <!-- User Agent -->
+                        <div class="ts-control is-wide has-top-spaced-large">
+                            <div class="label">User Agent</div>
+                            <div class="content">
+                                <div class="ts-input">
+                                    <textarea name="user_agent" rows="5" placeholder="Paste your user agent here">{{ .Config.UserAgent }}</textarea>
+                                </div>
+                                <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names, e.g. "channel1, channel2, channel3".</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ts-divider"></div>
+
+                    <div class="ts-content is-secondary is-horizontally-padded">
+                        <div class="ts-grid is-middle-aligned">
+                            <div class="column is-fluid">
+                                <div class="ts-text is-description">
+                                    <span class="ts-icon is-triangle-exclamation-icon is-end-spaced"></span>
+                                    Changes will be reverted after the program restarts
+                                </div>
+                            </div>
+                            <div class="column">
+                                <button type="reset" class="ts-button is-outlined is-secondary" data-dialog="settings-dialog">Cancel</button>
+                            </div>
+                            <div class="column">
+                                <button type="submit" class="ts-button is-primary">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <!-- Create Dialog -->
+        <dialog id="create-dialog" class="ts-modal" style="--width: 680px">
+            <div class="content">
+                <form action="/create_channel" method="POST">
+                    <div class="ts-content is-horizontally-padded is-secondary">
+                        <div class="ts-grid">
+                            <div class="column is-fluid">
+                                <div class="ts-header">Add Channel</div>
+                            </div>
+                            <div class="column">
+                                <button type="reset" class="ts-close is-rounded is-large is-secondary" data-dialog="create-dialog"></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ts-divider"></div>
+
+                    <div class="ts-content is-vertically-padded">
+                        <!-- Channel Username -->
+                        <div class="ts-control is-wide">
+                            <div class="label">Channel Username</div>
+                            <div class="content">
+                                <div class="ts-input is-start-labeled">
+                                    <div class="label">{{ .Config.Domain }}</div>
+                                    <input type="text" name="username" autofocus required />
+                                </div>
+                                <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names, e.g. "channel1, channel2, channel3".</div>
+                            </div>
+                        </div>
+
+                        <!-- Resolution -->
+                        <div class="ts-control is-wide has-top-spaced-large">
+                            <div class="label">Resolution</div>
+                            <div class="content">
+                                <div class="ts-select">
+                                    <select name="resolution">
+                                        <option value="2160" {{ if eq .Config.Resolution 2160 }}selected{{ end }}>4K</option>
+                                        <option value="1440" {{ if eq .Config.Resolution 1440 }}selected{{ end }}>2K</option>
+                                        <option value="1080" {{ if eq .Config.Resolution 1080 }}selected{{ end }}>1080p</option>
+                                        <option value="720" {{ if eq .Config.Resolution 720 }}selected{{ end }}>720p</option>
+                                        <option value="540" {{ if eq .Config.Resolution 540 }}selected{{ end }}>540p</option>
+                                        <option value="480" {{ if eq .Config.Resolution 480 }}selected{{ end }}>480p</option>
+                                        <option value="240" {{ if eq .Config.Resolution 240 }}selected{{ end }}>240p</option>
+                                    </select>
+                                </div>
+                                <div class="ts-text is-description has-top-spaced-small">The lower resolution will be used if the selected resolution is not available.</div>
+                            </div>
+                        </div>
+
+                        <!-- Framerate -->
+                        <div class="ts-control is-wide has-top-spaced-large">
+                            <div class="label">Framerate</div>
+                            <div class="content is-padded">
+                                <div class="ts-wrap is-compact is-vertical">
+                                    <label class="ts-radio">
+                                        <input type="radio" name="framerate" value="60" {{ if eq .Config.Framerate 60 }}checked{{ end }} />
+                                        60 FPS (or lower)
+                                    </label>
+                                    <label class="ts-radio">
+                                        <input type="radio" name="framerate" value="30" {{ if eq .Config.Framerate 30 }}checked{{ end }} />
+                                        30 FPS
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filename Pattern -->
+                        <div class="ts-control is-wide has-top-spaced-large">
+                            <div class="label">Filename Pattern</div>
+                            <div class="content">
+                                <div class="ts-input">
+                                    <input type="text" name="pattern" value="{{ .Config.Pattern }}" />
+                                </div>
+                                <div class="ts-text is-description has-top-spaced-small">
+                                    See the <a class="ts-text is-external-link is-link" href="https://github.com/teacat/chaturbate-dvr" target="_blank">README</a> for details.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ts-divider has-vertically-spaced-large"></div>
+
+                        <!-- Splitting Options -->
+                        <div class="ts-control is-wide has-top-spaced">
+                            <div class="label">Splitting Options</div>
+                            <div class="content">
+                                <div class="ts-content is-padded is-secondary">
+                                    <div class="ts-grid is-relaxed is-2-columns">
+                                        <div class="column">
+                                            <div class="ts-text is-bold">Max Filesize</div>
+                                            <div class="ts-input is-end-labeled has-top-spaced-small">
+                                                <input type="number" name="max_filesize" value="{{ .Config.MaxFilesize }}" />
+                                                <span class="label">MB</span>
+                                            </div>
+                                        </div>
+                                        <div class="column">
+                                            <div class="ts-text is-bold">Max Duration</div>
+                                            <div class="ts-input is-end-labeled has-top-spaced-small">
+                                                <input type="number" name="max_duration" value="{{ .Config.MaxDuration }}" />
+                                                <span class="label">Min(s)</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ts-text is-description has-top-spaced">Splitting will be disabled if both options are 0.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ts-divider"></div>
+
+                    <div class="ts-content is-secondary is-horizontally-padded">
+                        <div class="ts-wrap is-end-aligned">
+                            <button type="reset" class="ts-button is-outlined is-secondary" data-dialog="create-dialog">Cancel</button>
+                            <button type="submit" class="ts-button is-primary">Add Channel</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </dialog>
+
+        <script>
+            // before content was swapped by HTMX
+            document.body.addEventListener("htmx:sseBeforeMessage", function (e) {
+                // stop it if "auto-update" was unchecked
+                if (!e.detail.elt.closest(".ts-box").querySelector("[type=checkbox]").checked) {
+                    e.preventDefault()
+                    return
+                }
+                // else scroll the textarea to bottom with async trick
+                setTimeout(() => {
+                    let textarea = e.detail.elt.closest(".ts-box").querySelector("textarea")
+                    textarea.scrollTop = textarea.scrollHeight
+                }, 0)
+            })
+            document.body.querySelectorAll("textarea").forEach((textarea) => {
+                textarea.scrollTop = textarea.scrollHeight
+            })
+        </script>
+    </body>
+</html>

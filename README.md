@@ -2,96 +2,62 @@
 
 The program can records **multiple** Chaturbate streams, supports macOS, Windows, Linux, can be run on Docker.
 
-For Chaturbate-**only**, private/ticket stream is **unsupported**.
+For Chaturbate-**only**.
 
 ※ **[DMCA WARNING](https://www.dmca.com/)**: Contents on Chaturbate are copyrighted, you should not copy, share, distribute the content.
 
 &nbsp;
 
-## Usage
+## Getting Started
 
-Download executable from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page (e.g., `windows_chatubrate-dvr.exe`).
+Download executable from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page (e.g., `x64_windows_chatubrate-dvr.exe`)
 
 &nbsp;
 
-**🌐 Start the program with the Web UI**
+**1. 🌐 Start the program with the Web UI**
+
+```yaml
+# Windows (or double-click `x64_windows_chatubrate-dvr.exe` to open)
+$ x64_windows_chatubrate-dvr.exe
+
+# macOS or Linux
+$ ./x64_linux_chatubrate-dvr
+```
 
 Visit [`http://localhost:8080`](http://localhost:8080) to use the Web UI.
 
-```yaml
-# Windows (or double-click `chaturbate-dvr.exe` to open)
-$ chaturbate-dvr.exe
-
-# macOS or Linux
-$ chaturbate-dvr
-```
-
 &nbsp;
 
-**💻 or... Run as a command-line tool**
-
-Run the program with a channel name (`-u CHANNEL_USERNAME`) records the channel immediately, and the Web UI will be disabled.
+**2. 💻 Run as a command-line tool**
 
 ```yaml
 # Windows
-$ chaturbate-dvr.exe -u CHANNEL_USERNAME
+$ x64_windows_chatubrate-dvr.exe -u CHANNEL_USERNAME
 
 # macOS or Linux
-$ chaturbate-dvr -u CHANNEL_USERNAME
+$ ./x64_linux_chatubrate-dvr -u CHANNEL_USERNAME
+```
+
+This records the `CHANNEL_USERNAME` channel immediately, and the Web UI won't be available.
+
+&nbsp;
+
+**3. 🐳 Run on Docker**
+
+```yaml
+# Windows
+$ x64_windows_chatubrate-dvr.exe -u CHANNEL_USERNAME
+
+# macOS or Linux
+$ ./x64_linux_chatubrate-dvr -u CHANNEL_USERNAME
 ```
 
 &nbsp;
 
-## Preview
-
-![image_1](https://github.com/teacat/chaturbate-dvr/assets/7308718/c6d17ffe-eba7-4296-9315-f501489d85f3)
-![image_2](https://github.com/teacat/chaturbate-dvr/assets/7308718/d02923e0-574d-4a15-a373-8b0599101e3f)
-
-**or... Command-line tool**
-
-```
-$ ./chaturbate-dvr -u emillybrowm start
-
- ██████╗██╗  ██╗ █████╗ ████████╗██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗
-██╔════╝██║  ██║██╔══██╗╚══██╔══╝██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝
-██║     ███████║███████║   ██║   ██║   ██║██████╔╝██████╔╝███████║   ██║   █████╗
-██║     ██╔══██║██╔══██║   ██║   ██║   ██║██╔══██╗██╔══██╗██╔══██║   ██║   ██╔══╝
-╚██████╗██║  ██║██║  ██║   ██║   ╚██████╔╝██║  ██║██████╔╝██║  ██║   ██║   ███████╗
- ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝
-██████╗ ██╗   ██╗██████╗
-██╔══██╗██║   ██║██╔══██╗
-██║  ██║██║   ██║██████╔╝
-██║  ██║╚██╗ ██╔╝██╔══██╗
-██████╔╝ ╚████╔╝ ██║  ██║
-╚═════╝   ╚═══╝  ╚═╝  ╚═╝
-[2024-01-24 00:11:54] [INFO] [emillybrowm] channel created
-[2024-01-24 00:11:55] [INFO] [emillybrowm] channel is online, start fetching...
-[2024-01-24 00:11:55] [INFO] [emillybrowm] the stream will be saved as videos/emillybrowm_2024-01-24_00-11-55.ts
-[2024-01-24 00:11:55] [INFO] [emillybrowm] resolution 1080p is used
-[2024-01-24 00:11:55] [INFO] [emillybrowm] framerate 30fps is used
-[2024-01-24 00:11:57] [INFO] [emillybrowm] segment #0 written
-[2024-01-24 00:11:57] [INFO] [emillybrowm] segment #1 written
-[2024-01-24 00:11:57] [INFO] [emillybrowm] segment #2 written
-```
-
-&nbsp;
-
-## Help
+## Command-line
 
 ```bash
 $ chaturbate-dvr -h
-
-NAME:
-   chaturbate-dvr - Records your favorite Chaturbate stream 😎🫵
-
-USAGE:
-   chaturbate-dvr [global options] command [command options]
-
-VERSION:
-   1.0.0
-
-COMMANDS:
-   help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --username value, -u value               channel username to record
@@ -116,35 +82,19 @@ GLOBAL OPTIONS:
 
 ```yaml
 # Records in 720p/60fps
-$ chaturbate-dvr -u yamiodymel -r 720 -f 60
+$ ./x64_linux_chatubrate-dvr -u yamiodymel -r 720 -f 60
 
 # Split the video every 30 minutes
-$ chaturbate-dvr -u yamiodymel -sd 30
+$ ./x64_linux_chatubrate-dvr -u yamiodymel -sd 30
 
 # Split the video every 1024 MB
-$ chaturbate-dvr -u yamiodymel -sf 1024
+$ ./x64_linux_chatubrate-dvr -u yamiodymel -sf 1024
 
 # Change output filename pattern
-$ chaturbate-dvr -u yamiodymel -fp video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
+$ ./x64_linux_chatubrate-dvr -u yamiodymel -fp video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
 ```
 
-※ When runs in Web UI mode, the settings will be default settings for Web UI to create channels.
-
-&nbsp;
-
-## 📺 Framerate & Resolution / Fallback
-
-Fallback indicates what to do when there's no expected target resolution, situation:
-
-```
-Availables: 1080p, 720p, 240p
-
-Resolution: 480p (fallback setted to: up)
-    Result: 720p will be used
-
-Resolution: 480p (fallback setted to: down)
-    Result: 240p will be used
-```
+※ In Web UI mode, the settings are used as the default values for creating channels.
 
 &nbsp;
 
@@ -185,52 +135,35 @@ Pattern: video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}
 
 ## 🤔 Frequently Asked Questions
 
-**Q: The program closes itself when I just open it on Windows**
+**Q: The program closes itself when I just open it on Windows.**
 
-A: Try to open the program in **Command Prompt**, the error message should appear, and create a new [Issue](https://github.com/teacat/chaturbate-dvr/issues) for it.
-
-&nbsp;
-
-**Q: Channel is online but the program says it's Offline**
-
-A: The program might be blocked by Chaturbate or Cloudflare. If the Channel is in a private/ticket show, the program doesn't support it yet.
+> Try to open the program in **Command Prompt**, the error message should appear. Create a new [Issue](https://github.com/teacat/chaturbate-dvr/issues) for it.
 
 &nbsp;
 
-**Q: `listen tcp :8080: bind: An attempt was made to access a socket in a way forbidden by its access permissions.`**
+**Q: Error message `listen tcp :8080: bind: An attempt was made to access a socket in a way forbidden by its access permissions`**
 
-A: The port `8080` is already in use, change the port with `-port` option (e.g. `-port 8123`) and visit `http://localhost:8123`.
-
-If the error still occur, run **Command Prompt** as Administrator, and type `net stop winnat` then `net start winnat`, and re-run the Chaturbate DVR again.
-
-&nbsp;
-
-**Q: `A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.`**
-
-A: Your network is unstable or being blocked by Chaturbate, the program can't help with the network issue. Usually happened when you are using VPN or Proxy.
-
-&nbsp;
-
-**Q: `I'm receiving a message about CloudFlare anti-bot, what do I need to do?`**
-
-A: You need to successfully pass the CloudFlare anti-bot check and retrieve the cf_clearance Cookie that is set in the browser after successfully passing the check. This MUST be done from the same IP address and the same User-Agent string MUST be provided to chaturbate-dvr. Provide the cookie value and User-Agent string with the --cf-cookie and --user-agent command line options. The Cookie does expire, but it looks like it's Age is at ~1 year.
+> The port `8080` is already in use. Change the port using the `-p` option (e.g., `-p 8123`), then visit `http://localhost:8123`.
+>
+> If the error still occurs, run **Command Prompt** as Administrator, and enter the following commands:
+>
+> ```
+> net stop winnat
+> net start winnat
+> ```
+>
+> After that, re-open Chaturbate DVR.
 
 &nbsp;
 
-## 💬 Verbose Log
+**Q: Error message `A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond`**
 
-Change `-log-level` to `DEBUG` to see more details in terminal, like Duration and Size.
+> Your network is unstable or may be blocked by Chaturbate. This program can't fix network-related issues, which often occur when using a VPN or proxy.
 
-```yaml
-# Availables: DEBUG, INFO, WARN, ERROR
-$ chaturbate-dvr -u hepbugbear -log-level DEBUG
-[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #0 written
-[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 0.00 MiB
-[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #1 written
-[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 1.36 MiB
-[2024-01-24 01:18:11] [INFO] [hepbugbear] segment #2 written
-[2024-01-24 01:18:11] [DEBUG] [hepbugbear] duration: 00:00:06, size: 2.72 MiB
-[2024-01-24 01:18:12] [DEBUG] [hepbugbear] segment #3 fetched
-[2024-01-24 01:18:13] [INFO] [hepbugbear] segment #3 written
-[2024-01-24 01:18:13] [DEBUG] [hepbugbear] duration: 00:00:10, size: 4.08 MiB
-```
+&nbsp;
+
+**Q: Error message `channel was blocked by Cloudflare`**
+
+> Chaturbate has temporarily blocked your access due to scraping activity. Please refer to the [Cookies & User-Agent](#!) section above for more details.
+
+&nbsp;
