@@ -1,100 +1,150 @@
 # Chaturbate DVR
 
-The program can records **multiple** Chaturbate streams, supports macOS, Windows, Linux, can be run on Docker.
-
-For Chaturbate-**only**.
-
-※ **[DMCA WARNING](https://www.dmca.com/)**: Contents on Chaturbate are copyrighted, you should not copy, share, distribute the content.
+A tool to record **multiple** Chaturbate streams. Supports macOS, Windows, Linux, and Docker.
 
 &nbsp;
 
 ## Getting Started
 
-Download executable from **[Release](https://github.com/teacat/chaturbate-dvr/releases)** page (e.g., `x64_windows_chatubrate-dvr.exe`)
+Go to the [📦 Releases page](https://github.com/teacat/chaturbate-dvr/releases) and download the appropriate binary. (e.g., `x64_windows_chatubrate-dvr.exe`)
 
 &nbsp;
 
-**1. 🌐 Start the program with the Web UI**
+### 🌐 Launching the Web UI
 
 ```yaml
-# Windows (or double-click `x64_windows_chatubrate-dvr.exe` to open)
+# Windows
 $ x64_windows_chatubrate-dvr.exe
 
-# macOS or Linux
+# macOS / Linux
 $ ./x64_linux_chatubrate-dvr
 ```
 
-Visit [`http://localhost:8080`](http://localhost:8080) to use the Web UI.
+Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
 
 &nbsp;
 
-**2. 💻 Run as a command-line tool**
+### 💻 Using as a CLI Tool
 
 ```yaml
 # Windows
 $ x64_windows_chatubrate-dvr.exe -u CHANNEL_USERNAME
 
-# macOS or Linux
+# macOS / Linux
 $ ./x64_linux_chatubrate-dvr -u CHANNEL_USERNAME
 ```
 
-This records the `CHANNEL_USERNAME` channel immediately, and the Web UI won't be available.
+This starts recording immediately. The Web UI will be disabled.
 
 &nbsp;
 
-**3. 🐳 Run on Docker**
-
-```yaml
-# Windows
-$ x64_windows_chatubrate-dvr.exe -u CHANNEL_USERNAME
-
-# macOS or Linux
-$ ./x64_linux_chatubrate-dvr -u CHANNEL_USERNAME
-```
-
-&nbsp;
-
-## Command-line
+### 🐳 Running with Docker
 
 ```bash
-$ chaturbate-dvr -h
+# Build the image
+$ docker build -t chaturbate-dvr .
 
-GLOBAL OPTIONS:
-   --username value, -u value               channel username to record
-   --gui-username value, --gui-u value      username for auth web (optional)
-   --gui-password value, --gui-p value      password for auth web (optional)
-   --framerate value, -f value              preferred framerate (default: 30)
-   --interval value, -i value               minutes to check if the channel is online (default: 1)
-   --resolution value, -r value             preferred resolution (default: 1080)
-   --resolution-fallback value, --rf value  fallback to 'up' (larger) or 'down' (smaller) resolution if preferred resolution is not available (default: "down")
-   --filename-pattern value, --fp value     filename pattern for videos (default: "videos/{{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}{{if .Sequence}}_{{.Sequence}}{{end}}")
-   --split-duration value, --sd value       minutes to split each video into segments ('0' to disable) (default: 0)
-   --split-filesize value, --sf value       size in MB to split each video into segments ('0' to disable) (default: 0)
-   --log-level value                        log level, availables: 'DEBUG', 'INFO', 'WARN', 'ERROR' (default: "INFO")
-   --port value                             port to expose the web interface and API (default: "8080")
-   --cf-cookie value                        Cloudflare cookie to bypass anti-bot page
-   --user-agent value                       Custom user agent for when using cf-cookie
-   --help, -h                               show help
-   --version, -v                            print the version
+# Run the container and save videos to ./videos
+$ docker run -d \
+    --name my-dvr \
+    -p 8080:8080 \
+    -v "./videos:/usr/src/app/videos" \
+    -v "./conf:/usr/src/app/conf" \
+    chaturbate-dvr
+```
+
+Or use `docker-compose.yml`:
+
+```yaml
+$ docker-compose up
+```
+
+Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
+
+&nbsp;
+
+## 🧾 Command-Line Options
+
+Available options:
+
+```
+--username value, -u value  The username of the channel to record
+--admin-username value      Username for web authentication (optional)
+--admin-password value      Password for web authentication (optional)
+--framerate value           Desired framerate (FPS) (default: 30)
+--resolution value          Desired resolution (e.g., 1080 for 1080p) (default: 1080)
+--pattern value             Template for naming recorded videos (default: "videos/{{.Username}}_{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}{{if .Sequence}}_{{.Sequence}}{{end}}")
+--max-duration value        Split video into segments every N minutes ('0' to disable) (default: 0)
+--max-filesize value        Split video into segments every N MB ('0' to disable) (default: 0)
+--port value, -p value      Port for the web interface and API (default: "8080")
+--interval value            Check if the channel is online every N minutes (default: 1)
+--cookies value             Cookies to use in the request (format: key=value; key2=value2)
+--user-agent value          Custom User-Agent for the request
+--domain value              Chaturbate domain to use (default: "https://chaturbate.global/")
+--help, -h                  show help
+--version, -v               print the version
 ```
 
 **Examples**:
 
 ```yaml
-# Records in 720p/60fps
-$ ./x64_linux_chatubrate-dvr -u yamiodymel -r 720 -f 60
+# Record at 720p / 60fps
+$ ./chatubrate-dvr -u yamiodymel -resolution 720 -framerate 60
 
-# Split the video every 30 minutes
-$ ./x64_linux_chatubrate-dvr -u yamiodymel -sd 30
+# Split every 30 minutes
+$ ./chatubrate-dvr -u yamiodymel -max-duration 30
 
-# Split the video every 1024 MB
-$ ./x64_linux_chatubrate-dvr -u yamiodymel -sf 1024
+# Split at 1024 MB
+$ ./chatubrate-dvr -u yamiodymel -max-filesize 1024
 
-# Change output filename pattern
-$ ./x64_linux_chatubrate-dvr -u yamiodymel -fp video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}
+# Custom filename format
+$ ./chatubrate-dvr -u yamiodymel \
+    -pattern "video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}"
 ```
 
-※ In Web UI mode, the settings are used as the default values for creating channels.
+_Note: In Web UI mode, these flags serve as default values for new channels._
+
+&nbsp;
+
+## 🍪 Cookies & User-Agent
+
+### Bypass Cloudflare
+
+1. Open [Chaturbate](https://chaturbate.com) in your browser and complete the Cloudflare check (keep refresh with F5 if the check doesn't appear)
+
+2. Open **DevTools (F12)** → **Application** tab → **Cookies** → `https://chaturbate.com` → Copy the `cf_clearance` value
+
+![sshot-2025-04-30-146](https://github.com/user-attachments/assets/69f4061b-29a2-48a7-ad57-0c86148805e2)
+
+3. User-Agent can be found using [WhatIsMyBrowser](https://www.whatismybrowser.com/detect/what-is-my-user-agent/), now run with `-cookies` and `-user-agent`:
+
+    ```yaml
+    $ ./chatubrate-dvr -u yamiodymel \
+    -cookies "cf_clearance=PASTE_YOUR_CF_CLEARANCE_HERE" \
+    -user-agent "PASTE_YOUR_USER_AGENT_HERE"
+    ```
+
+    Example:
+
+    ```yaml
+    $ ./chatubrate-dvr -u yamiodymel \
+    -cookies "cf_clearance=i975JyJSMZUuEj2kIqfaClPB2dLomx3.iYo6RO1IIRg-1746019135-1.2.1.1-2CX..." \
+    -user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
+    ```
+
+&nbsp;
+
+### Record Private Shows
+
+1. Login [Chaturbate](https://chaturbate.com) in your browser.
+
+2. Open **DevTools (F12)** → **Application** tab → **Cookies** → `https://chaturbate.com` → Copy the `sessionid` value
+
+3. Run with `-cookies`:
+
+    ```yaml
+    $ ./chatubrate-dvr -u yamiodymel -cookies "sessionid=PASTE_YOUR_SESSIONID_HERE"
+    ```
 
 &nbsp;
 
@@ -129,41 +179,39 @@ Pattern: video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}
  Output: video/yamiodymel/2024-01-02_13-45-00_0.ts
 ```
 
-※ The file will be saved as `.ts` format and it's not configurable.
+_Note: Files are saved in `.ts` format, and this is not configurable._
 
 &nbsp;
 
 ## 🤔 Frequently Asked Questions
 
-**Q: The program closes itself when I just open it on Windows.**
+**Q: The program closes immediately on Windows.**
 
-> Try to open the program in **Command Prompt**, the error message should appear. Create a new [Issue](https://github.com/teacat/chaturbate-dvr/issues) for it.
-
-&nbsp;
-
-**Q: Error message `listen tcp :8080: bind: An attempt was made to access a socket in a way forbidden by its access permissions`**
-
-> The port `8080` is already in use. Change the port using the `-p` option (e.g., `-p 8123`), then visit `http://localhost:8123`.
->
-> If the error still occurs, run **Command Prompt** as Administrator, and enter the following commands:
->
-> ```
-> net stop winnat
-> net start winnat
-> ```
->
-> After that, re-open Chaturbate DVR.
+Open it via **Command Prompt**, the error message should appear. If needed, [create an issue](https://github.com/teacat/chaturbate-dvr/issues).
 
 &nbsp;
 
-**Q: Error message `A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond`**
+**Q: Error `listen tcp :8080: bind: An attempt was... by its access permissions`**
 
-> Your network is unstable or may be blocked by Chaturbate. This program can't fix network-related issues, which often occur when using a VPN or proxy.
+The port `8080` is in use. Try another port with `-p 8123`, then visit [http://localhost:8123](http://localhost:8123).
+
+If that fails, run **Command Prompt** as Administrator and execute:
+
+```yaml
+$ net stop winnat
+$ net start winnat
+```
 
 &nbsp;
 
-**Q: Error message `channel was blocked by Cloudflare`**
+**Q: Error `A connection attempt failed... host has failed to respond`**
 
-> Chaturbate has temporarily blocked your access due to scraping activity. Please refer to the [Cookies & User-Agent](#!) section above for more details.
+Likely a network issue (e.g., VPN, firewall, or blocked by Chaturbate). This cannot be fixed by the program.
+
+&nbsp;
+
+**Q: Error `Channel was blocked by Cloudflare`**
+
+You've been temporarily blocked. See the [Cookies & User-Agent](#-cookies--user-agent) section to bypass.
 
 &nbsp;
