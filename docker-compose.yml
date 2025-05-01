@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+    chaturbate-dvr:
+        build: .
+        image: chaturbate-dvr
+        container_name: chaturbate-dvr
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./videos:/usr/src/app/videos
+            - ./conf:/usr/src/app/conf

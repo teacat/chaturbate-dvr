@@ -7,6 +7,7 @@ import (
 
 	"github.com/teacat/chaturbate-dvr/config"
 	"github.com/teacat/chaturbate-dvr/entity"
+	"github.com/teacat/chaturbate-dvr/logger"
 	"github.com/teacat/chaturbate-dvr/manager"
 	"github.com/teacat/chaturbate-dvr/router"
 	"github.com/teacat/chaturbate-dvr/server"
@@ -117,6 +118,10 @@ func start(c *cli.Context) error {
 	server.Manager, err = manager.New()
 	if err != nil {
 		return fmt.Errorf("new manager: %w", err)
+	}
+	server.Logger, err = logger.New()
+	if err != nil {
+		return fmt.Errorf("new logger: %w", err)
 	}
 
 	// init web interface if username is not provided

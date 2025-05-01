@@ -73,12 +73,17 @@ func (ch *Channel) WithCancel(ctx context.Context) (context.Context, context.Can
 func (ch *Channel) Info(format string, a ...any) {
 	ch.LogCh <- fmt.Sprintf("%s [INFO] %s", time.Now().Format("15:04"), fmt.Sprintf(format, a...))
 	log.Printf(" INFO [%s] %s", ch.Config.Username, fmt.Sprintf(format, a...))
+	err := server.Logger.Write(fmt.Sprintf("%s  INFO [%s] %s", time.Now().Format("2006/01/02 15:04:05"), ch.Config.Username, fmt.Sprintf(format, a...)))
+	if err != nil {
+		log.Printf("failed to write log: %s", err.Error())
+	}
 }
 
 // Error logs an error message.
 func (ch *Channel) Error(format string, a ...any) {
 	ch.LogCh <- fmt.Sprintf("%s [ERROR] %s", time.Now().Format("15:04"), fmt.Sprintf(format, a...))
 	log.Printf("ERROR [%s] %s", ch.Config.Username, fmt.Sprintf(format, a...))
+	server.Logger.Write(fmt.Sprintf("%s ERROR [%s] %s", time.Now().Format("2006/01/02 15:04:05"), ch.Config.Username, fmt.Sprintf(format, a...)))
 }
 
 // ExportInfo exports the channel information as a ChannelInfo struct.

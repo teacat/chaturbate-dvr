@@ -108,9 +108,9 @@
                             <div class="label">Cookies</div>
                             <div class="content">
                                 <div class="ts-input">
-                                    <textarea name="cookies" rows="5" placeholder="Paste your cookies here">{{ .Config.Cookies }}</textarea>
+                                    <textarea name="cookies" rows="5">{{ .Config.Cookies }}</textarea>
                                 </div>
-                                <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names, e.g. "channel1, channel2, channel3".</div>
+                                <div class="ts-text is-description has-top-spaced-small">Use semicolons to separate multiple cookies, e.g., "key1=value1; key2=value2". See <a class="ts-text is-link" href="https://github.com/teacat/chaturbate-dvr/?tab=readme-ov-file#-cookies--user-agent" target="_blank">README</a> for details.</div>
                             </div>
                         </div>
 
@@ -119,9 +119,9 @@
                             <div class="label">User Agent</div>
                             <div class="content">
                                 <div class="ts-input">
-                                    <textarea name="user_agent" rows="5" placeholder="Paste your user agent here">{{ .Config.UserAgent }}</textarea>
+                                    <textarea name="user_agent" rows="5">{{ .Config.UserAgent }}</textarea>
                                 </div>
-                                <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names, e.g. "channel1, channel2, channel3".</div>
+                                <div class="ts-text is-description has-top-spaced-small">User-Agent can be found using tools like <a class="ts-text is-link" href="https://www.whatismybrowser.com/detect/what-is-my-user-agent/" target="_blank">WhatIsMyBrowser</a>.</div>
                             </div>
                         </div>
                     </div>

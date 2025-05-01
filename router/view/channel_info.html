@@ -87,10 +87,10 @@
 <!-- Actions -->
 <div class="ts-grid is-2-columns has-top-spaced-large">
     <div class="column">
-        <form action="/stop_channel/{{ .Username }}" method="POST" onsubmit="return confirm('Are you sure you want to stop `{{ .Username }}` channel?')">
-            <button class="ts-button is-start-icon is-secondary is-negative is-fluid" data-tooltip="Stop and remove the channel from the list.">
-                <span class="ts-icon is-stop-icon"></span>
-                Stop
+        <form action="/stop_channel/{{ .Username }}" method="POST" onsubmit="return confirm('Are you sure you want to delete `{{ .Username }}` channel?')">
+            <button class="ts-button is-start-icon is-outlined is-negative is-fluid" >
+                <span class="ts-icon is-trash-icon"></span>
+                Delete
             </button>
         </form>
     </div>

@@ -235,6 +235,7 @@ func (p *Playlist) WatchSegments(ctx context.Context, handler WatchHandler) erro
 				retry.Context(ctx),
 				retry.Attempts(3),
 				retry.Delay(600*time.Millisecond),
+				retry.DelayType(retry.FixedDelay),
 			)
 			if err != nil {
 				break

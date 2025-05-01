@@ -4,13 +4,13 @@ A tool to record **multiple** Chaturbate streams. Supports macOS, Windows, Linux
 
 &nbsp;
 
-## Getting Started
+# Getting Started
 
 Go to the [📦 Releases page](https://github.com/teacat/chaturbate-dvr/releases) and download the appropriate binary. (e.g., `x64_windows_chatubrate-dvr.exe`)
 
 &nbsp;
 
-### 🌐 Launching the Web UI
+## 🌐 Launching the Web UI
 
 ```yaml
 # Windows
@@ -24,7 +24,7 @@ Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
 
 &nbsp;
 
-### 💻 Using as a CLI Tool
+## 💻 Using as a CLI Tool
 
 ```yaml
 # Windows
@@ -38,7 +38,7 @@ This starts recording immediately. The Web UI will be disabled.
 
 &nbsp;
 
-### 🐳 Running with Docker
+## 🐳 Running with Docker
 
 ```bash
 # Build the image
@@ -63,7 +63,7 @@ Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
 
 &nbsp;
 
-## 🧾 Command-Line Options
+# 🧾 Command-Line Options
 
 Available options:
 
@@ -106,13 +106,19 @@ _Note: In Web UI mode, these flags serve as default values for new channels._
 
 &nbsp;
 
-## 🍪 Cookies & User-Agent
+# 🍪 Cookies & User-Agent
 
-### Bypass Cloudflare
+_Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=value2`._
 
-1. Open [Chaturbate](https://chaturbate.com) in your browser and complete the Cloudflare check (keep refresh with F5 if the check doesn't appear)
+&nbsp;
 
-2. Open **DevTools (F12)** → **Application** tab → **Cookies** → `https://chaturbate.com` → Copy the `cf_clearance` value
+## Bypass Cloudflare
+
+1. Open [Chaturbate](https://chaturbate.com) in your browser and complete the Cloudflare check.
+
+    (Keep refresh with F5 if the check doesn't appear)
+
+2. **DevTools (F12)** → **Application** → **Cookies** → `https://chaturbate.com` → Copy the `cf_clearance` value
 
 ![sshot-2025-04-30-146](https://github.com/user-attachments/assets/69f4061b-29a2-48a7-ad57-0c86148805e2)
 
@@ -134,11 +140,11 @@ _Note: In Web UI mode, these flags serve as default values for new channels._
 
 &nbsp;
 
-### Record Private Shows
+## Record Private Shows
 
 1. Login [Chaturbate](https://chaturbate.com) in your browser.
 
-2. Open **DevTools (F12)** → **Application** tab → **Cookies** → `https://chaturbate.com` → Copy the `sessionid` value
+2. **DevTools (F12)** → **Application** → **Cookies** → `https://chaturbate.com` → Copy the `sessionid` value
 
 3. Run with `-cookies`:
 
@@ -148,7 +154,7 @@ _Note: In Web UI mode, these flags serve as default values for new channels._
 
 &nbsp;
 
-## 📄 Filename Pattern
+# 📄 Filename Pattern
 
 The format is based on [Go Template Syntax](https://pkg.go.dev/text/template), available variables are:
 
@@ -183,35 +189,35 @@ _Note: Files are saved in `.ts` format, and this is not configurable._
 
 &nbsp;
 
-## 🤔 Frequently Asked Questions
+# 🤔 Frequently Asked Questions
 
 **Q: The program closes immediately on Windows.**
 
-Open it via **Command Prompt**, the error message should appear. If needed, [create an issue](https://github.com/teacat/chaturbate-dvr/issues).
+> Open it via **Command Prompt**, the error message should appear. If needed, [create an issue](https://github.com/teacat/chaturbate-dvr/issues).
 
 &nbsp;
 
 **Q: Error `listen tcp :8080: bind: An attempt was... by its access permissions`**
 
-The port `8080` is in use. Try another port with `-p 8123`, then visit [http://localhost:8123](http://localhost:8123).
-
-If that fails, run **Command Prompt** as Administrator and execute:
-
-```yaml
-$ net stop winnat
-$ net start winnat
-```
+> The port `8080` is in use. Try another port with `-p 8123`, then visit [http://localhost:8123](http://localhost:8123).
+>
+> If that fails, run **Command Prompt** as Administrator and execute:
+>
+> ```yaml
+> $ net stop winnat
+> $ net start winnat
+> ```
 
 &nbsp;
 
 **Q: Error `A connection attempt failed... host has failed to respond`**
 
-Likely a network issue (e.g., VPN, firewall, or blocked by Chaturbate). This cannot be fixed by the program.
+> Likely a network issue (e.g., VPN, firewall, or blocked by Chaturbate). This cannot be fixed by the program.
 
 &nbsp;
 
 **Q: Error `Channel was blocked by Cloudflare`**
 
-You've been temporarily blocked. See the [Cookies & User-Agent](#-cookies--user-agent) section to bypass.
+> You've been temporarily blocked. See the [Cookies & User-Agent](#-cookies--user-agent) section to bypass.
 
 &nbsp;

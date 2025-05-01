@@ -34,7 +34,7 @@ func (ch *Channel) Monitor() {
 			if errors.Is(err, internal.ErrChannelOffline) {
 				ch.Info("channel is offline, try again in %d min(s)", server.Config.Interval)
 			} else if errors.Is(err, internal.ErrCloudflareBlocked) {
-				ch.Info("channel was blocked by Cloudflare, restart with `--cookies` and `--user-agent` options? try again in %d min(s)", server.Config.Interval)
+				ch.Info("channel was blocked by Cloudflare; try with `-cookies` and `-user-agent`? try again in %d min(s)", server.Config.Interval)
 			} else if errors.Is(err, context.Canceled) {
 				// ...
 			} else {
@@ -46,6 +46,7 @@ func (ch *Channel) Monitor() {
 			retry.Context(ctx),
 			retry.Attempts(0),
 			retry.Delay(time.Duration(server.Config.Interval)*time.Minute),
+			retry.DelayType(retry.FixedDelay),
 			retry.OnRetry(onRetry),
 		); err != nil {
 			break

@@ -46,8 +46,10 @@ func (m *Manager) SaveConfig() error {
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)
 	}
-
-	if err := os.WriteFile("chaturbate_channels.json", b, 0777); err != nil {
+	if err := os.MkdirAll("./conf", 0777); err != nil {
+		return fmt.Errorf("mkdir all conf: %w", err)
+	}
+	if err := os.WriteFile("./conf/channels.json", b, 0777); err != nil {
 		return fmt.Errorf("write file: %w", err)
 	}
 	return nil
@@ -55,7 +57,7 @@ func (m *Manager) SaveConfig() error {
 
 // LoadConfig loads the channels from JSON and starts them.
 func (m *Manager) LoadConfig() error {
-	b, err := os.ReadFile("chaturbate_channels.json")
+	b, err := os.ReadFile("./conf/channels.json")
 	if os.IsNotExist(err) {
 		return nil
 	}

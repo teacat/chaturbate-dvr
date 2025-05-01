@@ -102,8 +102,11 @@ func ParseCookies(cookieStr string) map[string]string {
 	for _, pair := range pairs {
 		parts := strings.SplitN(strings.TrimSpace(pair), "=", 2)
 		if len(parts) == 2 {
+			// Trim spaces around key and value
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
 			// Store cookie name and value in the map
-			cookies[parts[0]] = parts[1]
+			cookies[key] = value
 		}
 	}
 	return cookies
