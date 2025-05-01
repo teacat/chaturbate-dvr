@@ -2,9 +2,11 @@ package router
 
 import (
 	"embed"
+	"html/template"
 	"io/fs"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teacat/chaturbate-dvr/server"
@@ -16,6 +18,9 @@ var FS embed.FS
 // SetupRouter initializes and returns the Gin router.
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	if err := LoadHTMLFromEmbedFS(r, FS, "view/index.html", "view/channel_info.html"); err != nil {
+		log.Fatalf("failed to load HTML templates: %v", err)
+	}
 
 	// Apply authentication if configured
 	SetupAuth(r)
@@ -58,8 +63,23 @@ func SetupViews(r *gin.Engine) {
 	r.POST("/pause_channel/:username", PauseChannel)
 	r.POST("/resume_channel/:username", ResumeChannel)
 
-	r.LoadHTMLFiles("router/view/index.html", "router/view/channel_info.html")
-	// if err := LoadHTMLFromEmbedFS(r, FS, "handler/view/index.html"); err != nil {
-	// 	log.Fatalf("failed to load HTML templates: %v", err)
-	// }
+}
+
+// LoadHTMLFromEmbedFS loads specific HTML templates from an embedded filesystem and registers them with Gin.
+func LoadHTMLFromEmbedFS(r *gin.Engine, embeddedFS embed.FS, files ...string) error {
+	templ := template.New("")
+	for _, file := range files {
+		content, err := embeddedFS.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		_, err = templ.New(filepath.Base(file)).Parse(string(content))
+		if err != nil {
+			return err
+		}
+	}
+
+	// Set the parsed templates as the HTML renderer for Gin
+	r.SetHTMLTemplate(templ)
+	return nil
 }

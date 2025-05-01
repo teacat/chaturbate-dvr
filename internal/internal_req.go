@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/teacat/chaturbate-dvr/server"
 )
@@ -43,10 +44,11 @@ func (h *Req) Get(ctx context.Context, url string) (string, error) {
 
 // GetBytes sends an HTTP GET request and returns the response as a byte slice.
 func (h *Req) GetBytes(ctx context.Context, url string) ([]byte, error) {
-	req, err := CreateRequest(ctx, url)
+	req, cancel, err := CreateRequest(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("new request: %w", err)
 	}
+	defer cancel()
 
 	resp, err := h.client.Do(req)
 	if err != nil {
@@ -62,13 +64,15 @@ func (h *Req) GetBytes(ctx context.Context, url string) ([]byte, error) {
 }
 
 // CreateRequest constructs an HTTP GET request with necessary headers.
-func CreateRequest(ctx context.Context, url string) (*http.Request, error) {
+func CreateRequest(ctx context.Context, url string) (*http.Request, context.CancelFunc, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second) // timed out after 10 seconds
+
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return nil, err
+		return nil, cancel, err
 	}
 	SetRequestHeaders(req)
-	return req, nil
+	return req, cancel, nil
 }
 
 // SetRequestHeaders applies necessary headers to the request.
