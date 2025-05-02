@@ -1,6 +1,6 @@
 # Chaturbate DVR
 
-A tool to record **multiple** Chaturbate streams. Supports macOS, Windows, Linux, and Docker.
+A tool to record **multiple** Chaturbate streams. Supports macOS, Windows, Linux, and Docker. Favicon from [Twemoji](https://github.com/twitter/twemoji).
 
 ![Image](https://github.com/user-attachments/assets/d71f0aaa-e821-4371-9f48-658a137b42b6)
 

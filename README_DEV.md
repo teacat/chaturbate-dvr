@@ -26,9 +26,10 @@ GOOS=linux GOARCH=arm64 go build -o bin/arm64_linux_chatubrate-dvr
 ```
 
 Build Docker Tag:
-s
 
 ```
 docker build -t yamiodymel/chaturbate-dvr:2.0.0 .
 docker push yamiodymel/chaturbate-dvr:2.0.0
+docker image tag yamiodymel/chaturbate-dvr:2.0.0 yamiodymel/chaturbate-dvr:latest
+docker push yamiodymel/chaturbate-dvr:latest
 ```
