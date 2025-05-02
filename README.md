@@ -2,6 +2,10 @@
 
 A tool to record **multiple** Chaturbate streams. Supports macOS, Windows, Linux, and Docker.
 
+![Image](https://github.com/user-attachments/assets/d71f0aaa-e821-4371-9f48-658a137b42b6)
+
+![Image](https://github.com/user-attachments/assets/43ab0a07-0ece-40ba-9a0f-045ca0316638)
+
 &nbsp;
 
 # Getting Started
@@ -108,11 +112,15 @@ _Note: In Web UI mode, these flags serve as default values for new channels._
 
 # 🍪 Cookies & User-Agent
 
+You are able to set the Cookies & User-Agent in Web UI or in Command-Line as argument.
+
+![localhost_8080_ (4)](https://github.com/user-attachments/assets/cbd859a9-4255-404b-b6bf-fa89342f7258)
+
 _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=value2`._
 
 &nbsp;
 
-## Bypass Cloudflare
+## ☁️ Bypass Cloudflare
 
 1. Open [Chaturbate](https://chaturbate.com) in your browser and complete the Cloudflare check.
 
@@ -140,7 +148,7 @@ _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=val
 
 &nbsp;
 
-## Record Private Shows
+## 🕵️ Record Private Shows
 
 1. Login [Chaturbate](https://chaturbate.com) in your browser.
 
