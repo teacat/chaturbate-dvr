@@ -17,28 +17,27 @@ import (
 	"github.com/teacat/chaturbate-dvr/server"
 )
 
-// Regular expression to extract the room dossier information from the HTML response
+// roomDossierRegexp is used to extract the room dossier information from the HTML response.
 var roomDossierRegexp = regexp.MustCompile(`window\.initialRoomDossier = "(.*?)"`)
 
-// Client represents an API client for interacting with Chaturbate
-// It contains an HTTP client for making requests
+// Client represents an API client for interacting with Chaturbate.
 type Client struct {
 	Req *internal.Req
 }
 
-// NewClient initializes and returns a new Client instance
+// NewClient initializes and returns a new Client instance.
 func NewClient() *Client {
 	return &Client{
 		Req: internal.NewReq(),
 	}
 }
 
-// GetStream fetches the stream information for a given username
+// GetStream fetches the stream information for a given username.
 func (c *Client) GetStream(ctx context.Context, username string) (*Stream, error) {
 	return FetchStream(ctx, c.Req, username)
 }
 
-// FetchStream retrieves the streaming data from the given username's page
+// FetchStream retrieves the streaming data from the given username's page.
 func FetchStream(ctx context.Context, client *internal.Req, username string) (*Stream, error) {
 	body, err := client.Get(ctx, fmt.Sprintf("%s%s", server.Config.Domain, username))
 	if err != nil {
@@ -58,7 +57,7 @@ func FetchStream(ctx context.Context, client *internal.Req, username string) (*S
 	return ParseStream(body)
 }
 
-// ParseStream extracts the HLS source URL from the given page body
+// ParseStream extracts the HLS source URL from the given page body.
 func ParseStream(body string) (*Stream, error) {
 	matches := roomDossierRegexp.FindStringSubmatch(body)
 	if len(matches) == 0 {
@@ -82,17 +81,17 @@ func ParseStream(body string) (*Stream, error) {
 	return &Stream{HLSSource: room.HLSSource}, nil
 }
 
-// Stream represents an HLS stream source
+// Stream represents an HLS stream source.
 type Stream struct {
 	HLSSource string
 }
 
-// GetPlaylist retrieves the playlist corresponding to the given resolution and framerate
+// GetPlaylist retrieves the playlist corresponding to the given resolution and framerate.
 func (s *Stream) GetPlaylist(ctx context.Context, resolution, framerate int) (*Playlist, error) {
 	return FetchPlaylist(ctx, s.HLSSource, resolution, framerate)
 }
 
-// FetchPlaylist fetches and decodes the HLS playlist file
+// FetchPlaylist fetches and decodes the HLS playlist file.
 func FetchPlaylist(ctx context.Context, hlsSource string, resolution, framerate int) (*Playlist, error) {
 	if hlsSource == "" {
 		return nil, errors.New("HLS source is empty")
@@ -106,7 +105,7 @@ func FetchPlaylist(ctx context.Context, hlsSource string, resolution, framerate 
 	return ParsePlaylist(resp, hlsSource, resolution, framerate)
 }
 
-// ParsePlaylist decodes the M3U8 playlist and extracts the variant streams
+// ParsePlaylist decodes the M3U8 playlist and extracts the variant streams.
 func ParsePlaylist(resp, hlsSource string, resolution, framerate int) (*Playlist, error) {
 	p, _, err := m3u8.DecodeFrom(strings.NewReader(resp), true)
 	if err != nil {
@@ -121,7 +120,7 @@ func ParsePlaylist(resp, hlsSource string, resolution, framerate int) (*Playlist
 	return PickPlaylist(masterPlaylist, hlsSource, resolution, framerate)
 }
 
-// Playlist represents an HLS playlist containing variant streams
+// Playlist represents an HLS playlist containing variant streams.
 type Playlist struct {
 	PlaylistURL string
 	RootURL     string
@@ -129,12 +128,13 @@ type Playlist struct {
 	Framerate   int
 }
 
+// Resolution represents a video resolution and its corresponding framerate.
 type Resolution struct {
 	Framerate map[int]string // [framerate]url
 	Width     int
 }
 
-// PickPlaylist selects the best matching variant stream based on resolution and framerate
+// PickPlaylist selects the best matching variant stream based on resolution and framerate.
 func PickPlaylist(masterPlaylist *m3u8.MasterPlaylist, baseURL string, resolution, framerate int) (*Playlist, error) {
 	resolutions := map[int]*Resolution{}
 
@@ -196,12 +196,15 @@ func PickPlaylist(masterPlaylist *m3u8.MasterPlaylist, baseURL string, resolutio
 	}, nil
 }
 
+// WatchHandler is a function type that processes video segments.
 type WatchHandler func(b []byte, duration float64) error
 
-// WatchSegments continuously fetches and processes video segments
+// WatchSegments continuously fetches and processes video segments.
 func (p *Playlist) WatchSegments(ctx context.Context, handler WatchHandler) error {
-	client := internal.NewReq()
-	lastSegment := ""
+	var (
+		client  = internal.NewReq()
+		lastSeq = -1
+	)
 
 	for {
 		// Fetch the latest playlist
@@ -220,10 +223,14 @@ func (p *Playlist) WatchSegments(ctx context.Context, handler WatchHandler) erro
 
 		// Process new segments
 		for _, v := range playlist.Segments {
-			if v == nil || v.URI <= lastSegment {
+			if v == nil {
 				continue
 			}
-			lastSegment = v.URI
+			seq := internal.SegmentSeq(v.URI)
+			if seq == -1 || seq <= lastSeq {
+				continue
+			}
+			lastSeq = seq
 
 			// Fetch segment data with retry mechanism
 			pipeline := func() ([]byte, error) {
@@ -246,5 +253,7 @@ func (p *Playlist) WatchSegments(ctx context.Context, handler WatchHandler) erro
 				return fmt.Errorf("handler: %w", err)
 			}
 		}
+
+		<-time.After(1 * time.Second) // time.Duration(playlist.TargetDuration)
 	}
 }

@@ -1,5 +1,6 @@
 package entity
 
+// Event represents the type of event for the channel.
 type Event = string
 
 const (
@@ -7,6 +8,7 @@ const (
 	EventLog    Event = "log"
 )
 
+// ChannelConfig represents the configuration for a channel.
 type ChannelConfig struct {
 	IsPaused    bool   `json:"is_paused"`
 	Username    string `json:"username"`
@@ -15,8 +17,11 @@ type ChannelConfig struct {
 	Pattern     string `json:"pattern"`
 	MaxDuration int    `json:"max_duration"`
 	MaxFilesize int    `json:"max_filesize"`
+	CreatedAt   int64  `json:"created_at"`
 }
 
+// ChannelInfo represents the information about a channel,
+// mostly used for the template rendering.
 type ChannelInfo struct {
 	IsOnline     bool
 	IsPaused     bool
@@ -27,6 +32,7 @@ type ChannelInfo struct {
 	StreamedAt   string
 	MaxDuration  string
 	MaxFilesize  string
+	CreatedAt    int64
 	Logs         []string
 	GlobalConfig *Config // for nested template to access $.Config
 }

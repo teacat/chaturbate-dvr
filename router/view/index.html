@@ -35,6 +35,7 @@
                     </button>
                 </div>
             </div>
+            <!-- / Header -->
 
             {{ if not .Channels }}
             <!-- Blankslate -->
@@ -57,8 +58,14 @@
             <div class="ts-wrap is-vertical has-top-spaced-large" sse-connect="/updates?stream=updates">
                 {{ range .Channels }}
                 <div class="ts-box is-horizontal">
+                     <!-- Info Section -->
+                     <div sse-swap="{{ .Username }}-info" class="ts-content is-padded has-break-all" style="width: 400px; line-height: 1.45; padding-right: 0">
+                        {{ template "channel_info" . }}
+                    </div>
+                    <!-- / Info Section -->
+
+                    <!-- Log Section -->
                     <div class="ts-content is-padded" style="flex: 1; gap: 0.8rem; display: flex; flex-direction: column">
-                        <!-- Logs -->
                         <div class="ts-input" style="flex: 1">
                             <textarea class="has-full-height" readonly sse-swap="{{ .Username }}-log" style="scrollbar-width: thin">{{ range .Logs }}{{ . }}&NewLine;{{ end }}</textarea>
                         </div>
@@ -68,22 +75,15 @@
                                 Auto-Update & Scroll Logs
                             </label>
                         </div>
-                        <!-- / Logs -->
                     </div>
-                    <!-- / Left Section -->
-
-                    <!-- Info Section -->
-                    <div sse-swap="{{ .Username }}-info" class="ts-content is-padded has-break-all" style="width: 400px; line-height: 1.45; padding-left: 0">
-                        {{ template "channel_info" . }}
-                    </div>
-                    <!-- / Info Section -->
+                    <!-- / Log Section -->
                 </div>
-
                 {{ end }}
             </div>
             <!-- / Channels -->
             {{ end }}
         </div>
+        <!-- / Main Section -->
 
         <!-- Settings Dialog -->
         <dialog id="settings-dialog" class="ts-modal" style="--width: 680px">
@@ -113,6 +113,7 @@
                                 <div class="ts-text is-description has-top-spaced-small">Use semicolons to separate multiple cookies, e.g., "key1=value1; key2=value2". See <a class="ts-text is-link" href="https://github.com/teacat/chaturbate-dvr/?tab=readme-ov-file#-cookies--user-agent" target="_blank">README</a> for details.</div>
                             </div>
                         </div>
+                        <!-- / Cookies -->
 
                         <!-- User Agent -->
                         <div class="ts-control is-wide has-top-spaced-large">
@@ -124,6 +125,7 @@
                                 <div class="ts-text is-description has-top-spaced-small">User-Agent can be found using tools like <a class="ts-text is-link" href="https://www.whatismybrowser.com/detect/what-is-my-user-agent/" target="_blank">WhatIsMyBrowser</a>.</div>
                             </div>
                         </div>
+                        <!-- / User Agent -->
                     </div>
 
                     <div class="ts-divider"></div>
@@ -147,6 +149,7 @@
                 </form>
             </div>
         </dialog>
+        <!-- / Settings Dialog -->
 
         <!-- Create Dialog -->
         <dialog id="create-dialog" class="ts-modal" style="--width: 680px">
@@ -177,6 +180,7 @@
                                 <div class="ts-text is-description has-top-spaced-small">Use commas to separate multiple channel names, e.g. "channel1, channel2, channel3".</div>
                             </div>
                         </div>
+                        <!-- / Channel Username -->
 
                         <!-- Resolution -->
                         <div class="ts-control is-wide has-top-spaced-large">
@@ -196,6 +200,7 @@
                                 <div class="ts-text is-description has-top-spaced-small">The lower resolution will be used if the selected resolution is not available.</div>
                             </div>
                         </div>
+                        <!-- / Resolution -->
 
                         <!-- Framerate -->
                         <div class="ts-control is-wide has-top-spaced-large">
@@ -213,6 +218,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- / Framerate -->
 
                         <!-- Filename Pattern -->
                         <div class="ts-control is-wide has-top-spaced-large">
@@ -226,6 +232,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- / Filename Pattern -->
 
                         <div class="ts-divider has-vertically-spaced-large"></div>
 
@@ -254,6 +261,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- / Splitting Options -->
                     </div>
 
                     <div class="ts-divider"></div>
@@ -267,6 +275,7 @@
                 </form>
             </div>
         </dialog>
+        <!-- / Create Dialog -->
 
         <script>
             // before content was swapped by HTMX

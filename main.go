@@ -109,6 +109,8 @@ func main() {
 }
 
 func start(c *cli.Context) error {
+	fmt.Println(logo)
+
 	var err error
 	server.Config, err = config.New(c)
 	if err != nil {
@@ -121,9 +123,12 @@ func start(c *cli.Context) error {
 
 	// init web interface if username is not provided
 	if server.Config.Username == "" {
+		fmt.Printf("👋 Visit http://localhost:%s to use the Web UI\n\n\n", c.String("port"))
+
 		if err := server.Manager.LoadConfig(); err != nil {
 			return fmt.Errorf("load config: %w", err)
 		}
+
 		return router.SetupRouter().Run(":" + c.String("port"))
 	}
 

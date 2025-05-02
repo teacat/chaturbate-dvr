@@ -17,6 +17,8 @@ var FS embed.FS
 
 // SetupRouter initializes and returns the Gin router.
 func SetupRouter() *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
+
 	r := gin.Default()
 	if err := LoadHTMLFromEmbedFS(r, FS, "view/index.html", "view/channel_info.html"); err != nil {
 		log.Fatalf("failed to load HTML templates: %v", err)
@@ -24,10 +26,8 @@ func SetupRouter() *gin.Engine {
 
 	// Apply authentication if configured
 	SetupAuth(r)
-
 	// Serve static frontend files
 	SetupStatic(r)
-
 	// Register views
 	SetupViews(r)
 

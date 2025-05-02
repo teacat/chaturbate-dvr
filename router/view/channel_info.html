@@ -15,7 +15,6 @@
         {{ end }}
     </div>
 </div>
-
 <!-- / Header -->
 
 <div class="ts-divider has-top-spaced"></div>
@@ -87,14 +86,6 @@
 <!-- Actions -->
 <div class="ts-grid is-2-columns has-top-spaced-large">
     <div class="column">
-        <form action="/stop_channel/{{ .Username }}" method="POST" onsubmit="return confirm('Are you sure you want to delete `{{ .Username }}` channel?')">
-            <button class="ts-button is-start-icon is-outlined is-negative is-fluid" >
-                <span class="ts-icon is-trash-icon"></span>
-                Delete
-            </button>
-        </form>
-    </div>
-    <div class="column">
         {{ if .IsPaused }}
         <form>
             <button class="ts-button is-start-icon is-fluid" hx-post="/resume_channel/{{ .Username }}" hx-swap="none">
@@ -110,6 +101,14 @@
             </button>
         </form>
         {{ end }}
+    </div>
+    <div class="column">
+        <form action="/stop_channel/{{ .Username }}" method="POST" onsubmit="return confirm('Are you sure you want to delete `{{ .Username }}` channel?')">
+            <button class="ts-button is-start-icon is-outlined is-negative is-fluid" >
+                <span class="ts-icon is-trash-icon"></span>
+                Delete
+            </button>
+        </form>
     </div>
 </div>
 <!-- / Actions -->

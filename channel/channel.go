@@ -15,8 +15,8 @@ import (
 // Channel represents a channel instance.
 type Channel struct {
 	CancelFunc context.CancelFunc
-	LogCh      chan string //*entity.LogEvent
-	UpdateCh   chan bool   //*entity.UpdateEvent
+	LogCh      chan string
+	UpdateCh   chan bool
 
 	IsOnline   bool
 	StreamedAt int64
@@ -43,6 +43,8 @@ func New(conf *entity.ChannelConfig) *Channel {
 	return ch
 }
 
+// Publisher listens for log messages and updates from the channel
+// and publishes once received.
 func (ch *Channel) Publisher() {
 	for {
 		select {
@@ -98,6 +100,7 @@ func (ch *Channel) ExportInfo() *entity.ChannelInfo {
 		MaxDuration:  internal.FormatDuration(float64(ch.Config.MaxDuration * 60)), // MaxDuration from config is in minutes
 		MaxFilesize:  internal.FormatFilesize(ch.Config.MaxFilesize * 1024 * 1024), // MaxFilesize from config is in MB
 		StreamedAt:   streamedAt,
+		CreatedAt:    ch.Config.CreatedAt,
 		Duration:     internal.FormatDuration(ch.Duration),
 		Filesize:     internal.FormatFilesize(ch.Filesize),
 		Filename:     filename,
@@ -106,7 +109,7 @@ func (ch *Channel) ExportInfo() *entity.ChannelInfo {
 	}
 }
 
-// Pause pauses the channel and cancels the context,
+// Pause pauses the channel and cancels the context.
 func (ch *Channel) Pause() {
 	// Stop the monitoring loop
 	ch.CancelFunc()
@@ -119,7 +122,7 @@ func (ch *Channel) Pause() {
 	ch.Info("channel paused")
 }
 
-// Stop stops the channel and cancels the context,
+// Stop stops the channel and cancels the context.
 func (ch *Channel) Stop() {
 	// Stop the monitoring loop
 	ch.CancelFunc()
@@ -128,7 +131,9 @@ func (ch *Channel) Stop() {
 }
 
 // Resume resumes the channel monitoring.
+//
 // `startSeq` is used to prevent all channels from starting at the same time, preventing TooManyRequests errors.
+// It's only be used when program starting and trying to resume all channels at once.
 func (ch *Channel) Resume(startSeq int) {
 	ch.Config.IsPaused = false
 

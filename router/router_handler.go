@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/teacat/chaturbate-dvr/entity"
@@ -51,6 +52,7 @@ func CreateChannel(c *gin.Context) {
 			Pattern:     req.Pattern,
 			MaxDuration: req.MaxDuration,
 			MaxFilesize: req.MaxFilesize,
+			CreatedAt:   time.Now().Unix(),
 		}, true)
 	}
 	c.Redirect(http.StatusFound, "/")

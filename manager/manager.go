@@ -16,11 +16,13 @@ import (
 	"github.com/teacat/chaturbate-dvr/entity"
 )
 
+// Manager is responsible for managing channels and their states.
 type Manager struct {
 	Channels sync.Map
 	SSE      *sse.Server
 }
 
+// New initializes a new Manager instance with an SSE server.
 func New() (*Manager, error) {
 	server := sse.New()
 	server.SplitData = true
@@ -158,7 +160,7 @@ func (m *Manager) ChannelInfo() []*entity.ChannelInfo {
 	})
 
 	sort.Slice(channels, func(i, j int) bool {
-		return channels[i].Username < channels[j].Username
+		return channels[i].CreatedAt > channels[j].CreatedAt
 	})
 
 	return channels

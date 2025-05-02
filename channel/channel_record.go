@@ -12,6 +12,7 @@ import (
 	"github.com/teacat/chaturbate-dvr/server"
 )
 
+// Monitor starts monitoring the channel for live streams and records them.
 func (ch *Channel) Monitor() {
 	client := chaturbate.NewClient()
 	ch.Info("starting to record `%s`", ch.Config.Username)
@@ -63,10 +64,14 @@ func (ch *Channel) Monitor() {
 	}
 }
 
+// Update sends an update signal to the channel's update channel.
+// This notifies the Server-sent Event to boradcast the channel information to the client.
 func (ch *Channel) Update() {
 	ch.UpdateCh <- true
 }
 
+// RecordStream records the stream of the channel using the provided client.
+// It retrieves the stream information and starts watching the segments.
 func (ch *Channel) RecordStream(ctx context.Context, client *chaturbate.Client) error {
 	stream, err := client.GetStream(ctx, ch.Config.Username)
 	if err != nil {

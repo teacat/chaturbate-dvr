@@ -1,6 +1,10 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"regexp"
+	"strconv"
+)
 
 // FormatDuration converts a float64 duration (in seconds) to h:m:s format.
 func FormatDuration(duration float64) string {
@@ -33,6 +37,20 @@ func FormatFilesize(filesize int) string {
 	case filesize >= KB:
 		return fmt.Sprintf("%.2f KB", float64(filesize)/float64(KB))
 	default:
-		return fmt.Sprintf("%d Bytes", filesize)
+		return fmt.Sprintf("%d bytes", filesize)
 	}
+}
+
+// SegmentSeq extracts the segment sequence number from a filename.
+func SegmentSeq(filename string) int {
+	re := regexp.MustCompile(`_(\d+)\.ts$`)
+	match := re.FindStringSubmatch(filename)
+
+	if len(match) > 1 {
+		number, err := strconv.Atoi(match[1])
+		if err == nil {
+			return number
+		}
+	}
+	return -1
 }
