@@ -16,7 +16,7 @@ Go to the [📦 Releases page](https://github.com/teacat/chaturbate-dvr/releases
 
 ## 🌐 Launching the Web UI
 
-```yaml
+```bash
 # Windows
 $ x64_windows_chatubrate-dvr.exe
 
@@ -30,7 +30,7 @@ Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
 
 ## 💻 Using as a CLI Tool
 
-```yaml
+```bash
 # Windows
 $ x64_windows_chatubrate-dvr.exe -u CHANNEL_USERNAME
 
@@ -46,19 +46,19 @@ This starts recording immediately. The Web UI will be disabled.
 
 Pre-built image `yamiodymel/chaturbate-dvr` from [Docker Hub](https://hub.docker.com/r/yamiodymel/chaturbate-dvr):
 
-```yaml
+```bash
 # Run the container and save videos to ./videos
 $ docker run -d \
---name my-dvr \
--p 8080:8080 \
--v "./videos:/usr/src/app/videos" \
--v "./conf:/usr/src/app/conf" \
-yamiodymel/chaturbate-dvr
+    --name my-dvr \
+    -p 8080:8080 \
+    -v "./videos:/usr/src/app/videos" \
+    -v "./conf:/usr/src/app/conf" \
+    yamiodymel/chaturbate-dvr
 ```
 
 ...Or build your own image using the Dockerfile in this repository.
 
-```yaml
+```bash
 # Build the image
 $ docker build -t chaturbate-dvr .
 
@@ -73,7 +73,7 @@ $ docker run -d \
 
 ...Or use [`docker-compose.yml`](https://github.com/teacat/chaturbate-dvr/blob/master/docker-compose.yml):
 
-```yaml
+```bash
 $ docker-compose up
 ```
 
@@ -105,7 +105,7 @@ Available options:
 
 **Examples**:
 
-```yaml
+```bash
 # Record at 720p / 60fps
 $ ./chatubrate-dvr -u yamiodymel -resolution 720 -framerate 60
 
@@ -146,18 +146,18 @@ _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=val
 
 3. User-Agent can be found using [WhatIsMyBrowser](https://www.whatismybrowser.com/detect/what-is-my-user-agent/), now run with `-cookies` and `-user-agent`:
 
-    ```yaml
+    ```bash
     $ ./chatubrate-dvr -u yamiodymel \
-    -cookies "cf_clearance=PASTE_YOUR_CF_CLEARANCE_HERE" \
-    -user-agent "PASTE_YOUR_USER_AGENT_HERE"
+        -cookies "cf_clearance=PASTE_YOUR_CF_CLEARANCE_HERE" \
+        -user-agent "PASTE_YOUR_USER_AGENT_HERE"
     ```
 
     Example:
 
-    ```yaml
+    ```bash
     $ ./chatubrate-dvr -u yamiodymel \
-    -cookies "cf_clearance=i975JyJSMZUuEj2kIqfaClPB2dLomx3.iYo6RO1IIRg-1746019135-1.2.1.1-2CX..." \
-    -user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
+        -cookies "cf_clearance=i975JyJSMZUuEj2kIqfaClPB2dLomx3.iYo6RO1IIRg-1746019135-1.2.1.1-2CX..." \
+        -user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
     ```
 
 &nbsp;
@@ -170,7 +170,7 @@ _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=val
 
 3. Run with `-cookies`:
 
-    ```yaml
+    ```bash
     $ ./chatubrate-dvr -u yamiodymel -cookies "sessionid=PASTE_YOUR_SESSIONID_HERE"
     ```
 
@@ -225,7 +225,7 @@ _Note: Files are saved in `.ts` format, and this is not configurable._
 >
 > If that fails, run **Command Prompt** as Administrator and execute:
 >
-> ```yaml
+> ```bash
 > $ net stop winnat
 > $ net start winnat
 > ```
