@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"os"
 	"sort"
@@ -14,6 +13,7 @@ import (
 	"github.com/r3labs/sse/v2"
 	"github.com/teacat/chaturbate-dvr/channel"
 	"github.com/teacat/chaturbate-dvr/entity"
+	"github.com/teacat/chaturbate-dvr/router/view"
 )
 
 // Manager is responsible for managing channels and their states.
@@ -24,6 +24,7 @@ type Manager struct {
 
 // New initializes a new Manager instance with an SSE server.
 func New() (*Manager, error) {
+
 	server := sse.New()
 	server.SplitData = true
 
@@ -170,13 +171,8 @@ func (m *Manager) ChannelInfo() []*entity.ChannelInfo {
 func (m *Manager) Publish(evt entity.Event, info *entity.ChannelInfo) {
 	switch evt {
 	case entity.EventUpdate:
-		tpl, err := template.New("update").ParseFiles("router/view/channel_info.html")
-		if err != nil {
-			fmt.Println("Error parsing template:", err)
-			return
-		}
 		var b bytes.Buffer
-		if err := tpl.ExecuteTemplate(&b, "channel_info", info); err != nil {
+		if err := view.InfoTpl.ExecuteTemplate(&b, "channel_info", info); err != nil {
 			fmt.Println("Error executing template:", err)
 			return
 		}

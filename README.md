@@ -44,20 +44,24 @@ This starts recording immediately. The Web UI will be disabled.
 
 ## 🐳 Running with Docker
 
-```bash
+Pre-built image `yamiodymel/chaturbate-dvr` from [Docker Hub](https://hub.docker.com/r/yamiodymel/chaturbate-dvr):
+
+```yaml
+# Run the container and save videos to ./videos
+$ docker run -d --name my-dvr -p 8080:8080 -v "./videos:/usr/src/app/videos" -v "./conf:/usr/src/app/conf" yamiodymel/chaturbate-dvr
+```
+
+...Or build your own image using the Dockerfile in this repository.
+
+```yaml
 # Build the image
 $ docker build -t chaturbate-dvr .
 
 # Run the container and save videos to ./videos
-$ docker run -d \
-    --name my-dvr \
-    -p 8080:8080 \
-    -v "./videos:/usr/src/app/videos" \
-    -v "./conf:/usr/src/app/conf" \
-    chaturbate-dvr
+$ docker run -d --name my-dvr -p 8080:8080 -v "./videos:/usr/src/app/videos" -v "./conf:/usr/src/app/conf" chaturbate-dvr
 ```
 
-Or use `docker-compose.yml`:
+...Or use [`docker-compose.yml`](https://github.com/teacat/chaturbate-dvr/blob/master/docker-compose.yml):
 
 ```yaml
 $ docker-compose up

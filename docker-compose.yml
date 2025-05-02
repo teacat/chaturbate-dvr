@@ -2,8 +2,7 @@ version: "3.8"
 
 services:
     chaturbate-dvr:
-        build: .
-        image: chaturbate-dvr
+        image: yamiodymel/chaturbate-dvr
         container_name: chaturbate-dvr
         ports:
             - "8080:8080"

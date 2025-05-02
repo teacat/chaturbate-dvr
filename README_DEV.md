@@ -24,3 +24,11 @@ GOOS=windows GOARCH=arm64 go build -o bin/arm64_windows_chatubrate-dvr.exe &&
 GOOS=darwin GOARCH=arm64 go build -o bin/arm64_macos_chatubrate-dvr &&
 GOOS=linux GOARCH=arm64 go build -o bin/arm64_linux_chatubrate-dvr
 ```
+
+Build Docker Tag:
+s
+
+```
+docker build -t yamiodymel/chaturbate-dvr:2.0.0 .
+docker push yamiodymel/chaturbate-dvr:2.0.0
+```

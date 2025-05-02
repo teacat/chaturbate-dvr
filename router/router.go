@@ -3,24 +3,20 @@ package router
 import (
 	"embed"
 	"html/template"
-	"io/fs"
 	"log"
-	"net/http"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/teacat/chaturbate-dvr/router/view"
 	"github.com/teacat/chaturbate-dvr/server"
 )
-
-//go:embed view
-var FS embed.FS
 
 // SetupRouter initializes and returns the Gin router.
 func SetupRouter() *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	r := gin.Default()
-	if err := LoadHTMLFromEmbedFS(r, FS, "view/index.html", "view/channel_info.html"); err != nil {
+	if err := LoadHTMLFromEmbedFS(r, view.FS, "templates/index.html", "templates/channel_info.html"); err != nil {
 		log.Fatalf("failed to load HTML templates: %v", err)
 	}
 
@@ -46,11 +42,11 @@ func SetupAuth(r *gin.Engine) {
 
 // SetupStatic serves static frontend files.
 func SetupStatic(r *gin.Engine) {
-	frontendFS, err := fs.Sub(FS, "view")
+	fs, err := view.StaticFS()
 	if err != nil {
 		log.Fatalf("failed to initialize static files: %v", err)
 	}
-	r.StaticFS("/static", http.FS(frontendFS))
+	r.StaticFS("/static", fs)
 }
 
 // setupViews registers HTML templates and view handlers.
