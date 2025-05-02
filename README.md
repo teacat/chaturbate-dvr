@@ -126,7 +126,7 @@ _Note: In Web UI mode, these flags serve as default values for new channels._
 
 # 🍪 Cookies & User-Agent
 
-You are able to set the Cookies & User-Agent in Web UI or in Command-Line as argument.
+You can set Cookies and User-Agent via the Web UI or command-line arguments.
 
 ![localhost_8080_ (4)](https://github.com/user-attachments/assets/cbd859a9-4255-404b-b6bf-fa89342f7258)
 
