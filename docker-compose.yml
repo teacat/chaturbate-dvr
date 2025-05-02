@@ -1,10 +1,11 @@
-version: "3.0"
+version: "3.8"
 
 services:
-  chaturbate-dvr:
-    container_name: chaturbate-dvr
-    build: .
-    environment:
-      - USERNAME=CHANNEL_USERNAME
-    volumes:
-      - ./videos:/usr/src/app/videos
+    chaturbate-dvr:
+        image: yamiodymel/chaturbate-dvr
+        container_name: chaturbate-dvr
+        ports:
+            - "8080:8080"
+        volumes:
+            - ./videos:/usr/src/app/videos
+            - ./conf:/usr/src/app/conf

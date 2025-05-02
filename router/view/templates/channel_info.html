@@ -1,0 +1,115 @@
+{{ define "channel_info" }}
+
+<!-- Header -->
+<div class="ts-grid is-middle-aligned">
+    <div class="column is-fluid">
+        <div class="ts-header">{{ .Username }}</div>
+    </div>
+    <div class="column">
+        {{ if and .IsOnline (not .IsPaused) }}
+        <span class="ts-badge is-small is-start-spaced">RECORDING</span>
+        {{ else if and (not .IsOnline) (not .IsPaused) }}
+        <span class="ts-badge is-secondary is-small is-start-spaced">OFFLINE</span>
+        {{ else if .IsPaused }}
+        <span class="ts-badge is-negative is-small is-start-spaced">PAUSED</span>
+        {{ end }}
+    </div>
+</div>
+<!-- / Header -->
+
+<div class="ts-divider has-top-spaced"></div>
+
+<!-- Info: Channel URL -->
+<div class="ts-grid has-top-spaced">
+    <div class="column">
+        <span class="ts-icon is-link-icon"></span>
+    </div>
+    <div class="column is-fluid">
+        <div class="ts-text is-small is-bold">Channel URL</div>
+        <a class="ts-text is-small is-link is-external-link" href="{{ .GlobalConfig.Domain }}{{ .Username }}" target="_blank"> {{ .GlobalConfig.Domain }}{{ .Username }}</a>
+    </div>
+</div>
+<!-- / Info: Channel URL -->
+
+<!-- Info: Filename -->
+<div class="ts-grid has-top-spaced">
+    <div class="column">
+        <span class="ts-icon is-folder-icon"></span>
+    </div>
+    <div class="column is-fluid">
+        <div class="ts-text is-small is-bold">Filename</div>
+        {{ if .Filename }}
+        <div class="ts-text is-description">{{ .Filename }}</div>
+        {{ else }}
+        <span>-</span>
+        {{ end }}
+    </div>
+</div>
+<!-- / Info: Filename -->
+
+<!-- Info: Last streamed at -->
+<div class="ts-grid ts-grid has-top-spaced">
+    <div class="column">
+        <span class="ts-icon is-tower-broadcast-icon"></span>
+    </div>
+    <div class="column is-fluid">
+        <div class="ts-text is-small is-bold">Last streamed at</div>
+        <div class="ts-text is-description">{{ if .StreamedAt }}{{ .StreamedAt }} {{ if and .IsOnline (not .IsPaused) }}(NOW){{ end }}{{ else }} - {{ end }}</div>
+    </div>
+</div>
+<!-- / Info: Last streamed at -->
+
+<!-- Info: Segment duration -->
+<div class="ts-grid ts-grid has-top-spaced">
+    <div class="column">
+        <span class="ts-icon is-clock-icon"></span>
+    </div>
+    <div class="column is-fluid">
+        <div class="ts-text is-small is-bold">Segment duration</div>
+        <div class="ts-text is-description">{{ if .Duration }} {{ .Duration }} {{ if .MaxDuration }} / {{ .MaxDuration }} {{ end }} {{ else }} - {{ end }}</div>
+    </div>
+</div>
+<!-- / Info: Segment duration -->
+
+<!-- Info: Segment filesize -->
+<div class="ts-grid has-top-spaced">
+    <div class="column">
+        <span class="ts-icon is-chart-pie-icon"></span>
+    </div>
+    <div class="column is-fluid">
+        <div class="ts-text is-small is-bold">Segment filesize</div>
+        <div class="ts-text is-description">{{ if .Filesize }} {{ .Filesize }} {{ if .MaxFilesize }} / {{ .MaxFilesize }} {{ end }} {{ else }} - {{ end }}</div>
+    </div>
+</div>
+<!-- / Info: Segment filesize -->
+
+<!-- Actions -->
+<div class="ts-grid is-2-columns has-top-spaced-large">
+    <div class="column">
+        {{ if .IsPaused }}
+        <form>
+            <button class="ts-button is-start-icon is-fluid" hx-post="/resume_channel/{{ .Username }}" hx-swap="none">
+                <span class="ts-icon is-play-icon"></span>
+                Resume
+            </button>
+        </form>
+        {{ else }}
+        <form>
+            <button type="submit" class="ts-button is-start-icon is-secondary is-fluid" hx-post="/pause_channel/{{ .Username }}" hx-swap="none">
+                <span class="ts-icon is-pause-icon"></span>
+                Pause
+            </button>
+        </form>
+        {{ end }}
+    </div>
+    <div class="column">
+        <form action="/stop_channel/{{ .Username }}" method="POST" onsubmit="return confirm('Are you sure you want to delete `{{ .Username }}` channel?')">
+            <button class="ts-button is-start-icon is-outlined is-negative is-fluid" >
+                <span class="ts-icon is-trash-icon"></span>
+                Delete
+            </button>
+        </form>
+    </div>
+</div>
+<!-- / Actions -->
+{{ end }}
