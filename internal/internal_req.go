@@ -28,9 +28,15 @@ func NewReq() *Req {
 
 // CreateTransport initializes a custom HTTP transport.
 func CreateTransport() *http.Transport {
-	return &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	// The DefaultTransport allows user changes the proxy settings via environment variables
+	// such as HTTP_PROXY, HTTPS_PROXY.
+	defaultTransport := http.DefaultTransport.(*http.Transport)
+
+	newTransport := defaultTransport.Clone()
+	newTransport.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: true,
 	}
+	return newTransport
 }
 
 // Get sends an HTTP GET request and returns the response as a string.
