@@ -243,3 +243,11 @@ _Note: Files are saved in `.ts` format, and this is not configurable._
 > You've been temporarily blocked. See the [Cookies & User-Agent](#-cookies--user-agent) section to bypass.
 
 &nbsp;
+
+**Q: Is Proxy or SOCKS5 supported?**
+
+> Yes. You can launch the program using the `HTTPS_PROXY` environment variable:
+>
+> ```bash
+> $ HTTPS_PROXY="socks5://127.0.0.1:9050" ./chaturbate-dvr -u CHANNEL_USERNAME
+> ```
