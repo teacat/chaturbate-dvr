@@ -44,11 +44,6 @@ func FetchStream(ctx context.Context, client *internal.Req, username string) (*S
 		return nil, fmt.Errorf("failed to get page body: %w", err)
 	}
 
-	// Check for Cloudflare protection page
-	if strings.Contains(body, "<title>Just a moment...</title>") {
-		return nil, internal.ErrCloudflareBlocked
-	}
-
 	// Ensure that the playlist.m3u8 file is present in the response
 	if !strings.Contains(body, "playlist.m3u8") {
 		return nil, internal.ErrChannelOffline

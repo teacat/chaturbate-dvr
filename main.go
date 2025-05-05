@@ -30,7 +30,7 @@ const logo = `
 func main() {
 	app := &cli.App{
 		Name:    "chaturbate-dvr",
-		Version: "2.0.1",
+		Version: "2.0.2",
 		Usage:   "Record your favorite Chaturbate streams automatically. 😎🫵",
 		Flags: []cli.Flag{
 			&cli.StringFlag{

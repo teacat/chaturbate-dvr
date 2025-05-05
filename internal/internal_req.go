@@ -62,11 +62,25 @@ func (h *Req) GetBytes(ctx context.Context, url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read body: %w", err)
+	}
+
+	// Check for Cloudflare protection
+	if strings.Contains(string(b), "<title>Just a moment...</title>") {
+		return nil, ErrCloudflareBlocked
+	}
+	// Check for Age Verification
+	if strings.Contains(string(b), "Verify your age") {
+		return nil, ErrAgeVerification
+	}
+
 	if resp.StatusCode == http.StatusForbidden {
 		return nil, fmt.Errorf("forbidden: %w", ErrPrivateStream)
 	}
 
-	return ReadResponseBody(resp)
+	return b, err
 }
 
 // CreateRequest constructs an HTTP GET request with necessary headers.
@@ -83,6 +97,8 @@ func CreateRequest(ctx context.Context, url string) (*http.Request, context.Canc
 
 // SetRequestHeaders applies necessary headers to the request.
 func SetRequestHeaders(req *http.Request) {
+	req.Header.Set("X-Requested-With", "XMLHttpRequest") // So Cloudflare would likely accept the request, and no Age Verification
+
 	if server.Config.UserAgent != "" {
 		req.Header.Set("User-Agent", server.Config.UserAgent)
 	}
@@ -92,15 +108,6 @@ func SetRequestHeaders(req *http.Request) {
 			req.AddCookie(&http.Cookie{Name: name, Value: value})
 		}
 	}
-}
-
-// ReadResponseBody reads and returns the response body.
-func ReadResponseBody(resp *http.Response) ([]byte, error) {
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("read body: %w", err)
-	}
-	return b, nil
 }
 
 // ParseCookies converts a cookie string into a map.
