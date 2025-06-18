@@ -88,6 +88,7 @@ func (m *Manager) LoadConfig() error {
 
 // CreateChannel starts monitoring an M3U8 stream
 func (m *Manager) CreateChannel(conf *entity.ChannelConfig, shouldSave bool) error {
+	conf.Sanitize()
 	ch := channel.New(conf)
 
 	// prevent duplicate channels

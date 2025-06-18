@@ -1,5 +1,10 @@
 package entity
 
+import (
+	"regexp"
+	"strings"
+)
+
 // Event represents the type of event for the channel.
 type Event = string
 
@@ -18,6 +23,11 @@ type ChannelConfig struct {
 	MaxDuration int    `json:"max_duration"`
 	MaxFilesize int    `json:"max_filesize"`
 	CreatedAt   int64  `json:"created_at"`
+}
+
+func (c *ChannelConfig) Sanitize() {
+	c.Username = regexp.MustCompile(`[^a-zA-Z0-9_-]`).ReplaceAllString(c.Username, "")
+	c.Username = strings.TrimSpace(c.Username)
 }
 
 // ChannelInfo represents the information about a channel,
