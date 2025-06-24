@@ -141,5 +141,5 @@ func (ch *Channel) Resume(startSeq int) {
 	ch.Info("channel resumed")
 
 	<-time.After(time.Duration(startSeq) * time.Second)
-	ch.Monitor()
+	go ch.Monitor()
 }

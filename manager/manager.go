@@ -143,7 +143,7 @@ func (m *Manager) ResumeChannel(username string) error {
 	if !ok {
 		return nil
 	}
-	go thing.(*channel.Channel).Resume(0)
+	thing.(*channel.Channel).Resume(0)
 
 	if err := m.SaveConfig(); err != nil {
 		return fmt.Errorf("save config: %w", err)
