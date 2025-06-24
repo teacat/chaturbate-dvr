@@ -111,13 +111,12 @@ func (ch *Channel) ExportInfo() *entity.ChannelInfo {
 
 // Pause pauses the channel and cancels the context.
 func (ch *Channel) Pause() {
-	// Stop the monitoring loop
+	// Stop the monitoring loop, this also updates `ch.IsOnline` to false
+	// `context.Canceled` → `ch.Monitor()` → `onRetry` → `ch.UpdateOnlineStatus(false)`.
 	ch.CancelFunc()
 
 	ch.Config.IsPaused = true
 	ch.Sequence = 0
-	ch.IsOnline = false
-
 	ch.Update()
 	ch.Info("channel paused")
 }
@@ -142,4 +141,10 @@ func (ch *Channel) Resume(startSeq int) {
 
 	<-time.After(time.Duration(startSeq) * time.Second)
 	go ch.Monitor()
+}
+
+// UpdateOnlineStatus updates the online status of the channel.
+func (ch *Channel) UpdateOnlineStatus(isOnline bool) {
+	ch.IsOnline = isOnline
+	ch.Update()
 }
