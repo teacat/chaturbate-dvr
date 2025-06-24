@@ -284,10 +284,13 @@
         <script>
             // before content was swapped by HTMX
             document.body.addEventListener("htmx:sseBeforeMessage", function (e) {
-                // stop it if "auto-update" was unchecked
-                if (!e.detail.elt.closest(".ts-box").querySelector("[type=checkbox]").checked) {
-                    e.preventDefault()
-                    return
+                // ignore anything with `-log` content swap if "auto-update" was unchecked
+                let sswe_id = e.detail.elt.getAttribute('sse-swap')
+                if (sswe_id && sswe_id.endsWith("-log") ) {
+                    if (!e.detail.elt.closest(".ts-box").querySelector("[type=checkbox]").checked) {
+                        e.preventDefault()
+                        return
+                    }
                 }
                 // else scroll the textarea to bottom with async trick
                 setTimeout(() => {
