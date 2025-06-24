@@ -81,6 +81,7 @@ func (ch *Channel) RecordStream(ctx context.Context, client *chaturbate.Client) 
 		return fmt.Errorf("get stream: %w", err)
 	}
 	ch.StreamedAt = time.Now().Unix()
+	ch.Sequence = 0
 
 	if err := ch.NextFile(); err != nil {
 		return fmt.Errorf("next file: %w", err)

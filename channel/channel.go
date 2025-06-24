@@ -116,7 +116,6 @@ func (ch *Channel) Pause() {
 	ch.CancelFunc()
 
 	ch.Config.IsPaused = true
-	ch.Sequence = 0
 	ch.Update()
 	ch.Info("channel paused")
 }
