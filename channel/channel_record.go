@@ -54,13 +54,14 @@ func (ch *Channel) Monitor() {
 		}
 	}
 
-	if err != nil {
-		if !errors.Is(err, context.Canceled) {
-			ch.Error("record stream: %s", err.Error())
-		}
-		if err := ch.Cleanup(); err != nil {
-			ch.Error("cleanup canceled channel: %s", err.Error())
-		}
+	// Always cleanup when monitor exits, regardless of error
+	if err := ch.Cleanup(); err != nil {
+		ch.Error("cleanup on monitor exit: %s", err.Error())
+	}
+
+	// Log error if it's not a context cancellation
+	if err != nil && !errors.Is(err, context.Canceled) {
+		ch.Error("record stream: %s", err.Error())
 	}
 }
 
@@ -84,6 +85,13 @@ func (ch *Channel) RecordStream(ctx context.Context, client *chaturbate.Client) 
 	if err := ch.NextFile(); err != nil {
 		return fmt.Errorf("next file: %w", err)
 	}
+
+	// Ensure file is cleaned up when this function exits in any case
+	defer func() {
+		if err := ch.Cleanup(); err != nil {
+			ch.Error("cleanup on record stream exit: %s", err.Error())
+		}
+	}()
 
 	playlist, err := stream.GetPlaylist(ctx, ch.Config.Resolution, ch.Config.Framerate)
 	if err != nil {

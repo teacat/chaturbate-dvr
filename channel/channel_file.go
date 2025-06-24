@@ -44,9 +44,12 @@ func (ch *Channel) Cleanup() error {
 	if ch.File == nil {
 		return nil
 	}
+	filename := ch.File.Name()
+
 	defer func() {
 		ch.Filesize = 0
 		ch.Duration = 0
+		ch.File = nil
 	}()
 
 	// Sync the file to ensure data is written to disk
@@ -58,13 +61,15 @@ func (ch *Channel) Cleanup() error {
 	}
 
 	// Delete the empty file
-	if ch.Filesize <= 0 {
-		if err := os.Remove(ch.File.Name()); err != nil {
+	fileInfo, err := os.Stat(filename)
+	if err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("stat file delete zero file: %w", err)
+	}
+	if fileInfo != nil && fileInfo.Size() == 0 {
+		if err := os.Remove(filename); err != nil {
 			return fmt.Errorf("remove zero file: %w", err)
 		}
 	}
-
-	ch.File = nil
 	return nil
 }
 
