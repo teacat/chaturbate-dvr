@@ -2,6 +2,7 @@ package channel
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -49,14 +50,13 @@ func (ch *Channel) Cleanup() error {
 	defer func() {
 		ch.Filesize = 0
 		ch.Duration = 0
-		ch.File = nil
 	}()
 
 	// Sync the file to ensure data is written to disk
-	if err := ch.File.Sync(); err != nil {
+	if err := ch.File.Sync(); err != nil && !errors.Is(err, os.ErrClosed) {
 		return fmt.Errorf("sync file: %w", err)
 	}
-	if err := ch.File.Close(); err != nil {
+	if err := ch.File.Close(); err != nil && !errors.Is(err, os.ErrClosed) {
 		return fmt.Errorf("close file: %w", err)
 	}
 
