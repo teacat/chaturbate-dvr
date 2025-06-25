@@ -162,7 +162,12 @@ func (m *Manager) ChannelInfo() []*entity.ChannelInfo {
 	})
 
 	sort.Slice(channels, func(i, j int) bool {
-		return channels[i].CreatedAt > channels[j].CreatedAt
+		// First priority: Online channels
+		if channels[i].IsOnline != channels[j].IsOnline {
+			return channels[i].IsOnline
+		}
+		// Second priority: Alphabetical order by username
+		return strings.ToLower(channels[i].Username) < strings.ToLower(channels[j].Username)
 	})
 
 	return channels
