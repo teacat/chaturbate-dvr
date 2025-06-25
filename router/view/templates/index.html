@@ -24,7 +24,14 @@
             <div class="ts-grid is-bottom-aligned">
                 <div class="column is-fluid">
                     <div class="ts-header is-huge is-uppercased is-heavy has-leading-small">Chaturbate DVR</div>
-                    <div class="ts-text is-description is-bold">VERSION {{ .Config.Version }}</div>
+                    <div class="ts-meta">
+                        <div class="item">
+                            <span id="recording-counter" class="ts-text is-description is-bold"></span>
+                        </div>
+                        <div class="item">
+                            <span class="ts-text is-description is-bold">VERSION {{ .Config.Version }}</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="column">
                     <button class="ts-button is-start-icon is-outlined" data-dialog="settings-dialog">
@@ -282,6 +289,24 @@
         <!-- / Create Dialog -->
 
         <script>
+            // updateRecordingCount counts recording channels
+            function updateRecordingCount() {
+                // Count badges that contain "RECORDING" text (not secondary or negative)
+                let count = 0;
+                document.querySelectorAll('.ts-badge').forEach(badge => {
+                    if (badge.textContent.trim() === 'RECORDING') {
+                        count++;
+                    }
+                });
+
+                const counter_el = document.getElementById('recording-counter');
+                 if (count > 0) {
+                    counter_el.textContent = `${count} ${count === 1 ? 'CHANNEL IS' : 'CHANNELS ARE'} RECORDING`;
+                } else {
+                    counter_el.textContent = `NO RECORDING`;
+                }
+            }
+
             // before content was swapped by HTMX
             document.body.addEventListener("htmx:sseBeforeMessage", function (e) {
                 // ignore anything with `-log` content swap if "auto-update" was unchecked
@@ -298,6 +323,21 @@
                     textarea.scrollTop = textarea.scrollHeight
                 }, 0)
             })
+
+            // after content was swapped by HTMX (for status updates)
+            document.body.addEventListener("htmx:sseMessage", function (e) {
+                // only update recording count if the content swap is for channel info
+                let sswe_id = e.detail.elt.getAttribute('sse-swap')
+                if (sswe_id && sswe_id.endsWith("-info") ) {
+                    updateRecordingCount();
+                }
+            })
+
+            // Initial count on page load
+            document.addEventListener("DOMContentLoaded", function() {
+                updateRecordingCount();
+            });
+
             document.body.querySelectorAll("textarea").forEach((textarea) => {
                 textarea.scrollTop = textarea.scrollHeight
             })
