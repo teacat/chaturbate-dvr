@@ -10,7 +10,7 @@ A tool to record **multiple** Chaturbate streams. Supports macOS, Windows, Linux
 
 # Getting Started
 
-Go to the [📦 Releases page](https://github.com/teacat/chaturbate-dvr/releases) and download the appropriate binary. (e.g., `x64_windows_chatubrate-dvr.exe`)
+Go to the [📦 Releases page](https://github.com/teacat/chaturbate-dvr/releases) and download the appropriate binary. (e.g., `x64_windows_chaturbate-dvr.exe`)
 
 &nbsp;
 
@@ -18,10 +18,10 @@ Go to the [📦 Releases page](https://github.com/teacat/chaturbate-dvr/releases
 
 ```bash
 # Windows
-$ x64_windows_chatubrate-dvr.exe
+$ x64_windows_chaturbate-dvr.exe
 
 # macOS / Linux
-$ ./x64_linux_chatubrate-dvr
+$ ./x64_linux_chaturbate-dvr
 ```
 
 Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
@@ -32,10 +32,10 @@ Then visit [`http://localhost:8080`](http://localhost:8080) in your browser.
 
 ```bash
 # Windows
-$ x64_windows_chatubrate-dvr.exe -u CHANNEL_USERNAME
+$ x64_windows_chaturbate-dvr.exe -u CHANNEL_USERNAME
 
 # macOS / Linux
-$ ./x64_linux_chatubrate-dvr -u CHANNEL_USERNAME
+$ ./x64_linux_chaturbate-dvr -u CHANNEL_USERNAME
 ```
 
 This starts recording immediately. The Web UI will be disabled.
@@ -107,16 +107,16 @@ Available options:
 
 ```bash
 # Record at 720p / 60fps
-$ ./chatubrate-dvr -u yamiodymel -resolution 720 -framerate 60
+$ ./chaturbate-dvr -u yamiodymel -resolution 720 -framerate 60
 
 # Split every 30 minutes
-$ ./chatubrate-dvr -u yamiodymel -max-duration 30
+$ ./chaturbate-dvr -u yamiodymel -max-duration 30
 
 # Split at 1024 MB
-$ ./chatubrate-dvr -u yamiodymel -max-filesize 1024
+$ ./chaturbate-dvr -u yamiodymel -max-filesize 1024
 
 # Custom filename format
-$ ./chatubrate-dvr -u yamiodymel \
+$ ./chaturbate-dvr -u yamiodymel \
     -pattern "video/{{.Username}}/{{.Year}}-{{.Month}}-{{.Day}}_{{.Hour}}-{{.Minute}}-{{.Second}}_{{.Sequence}}"
 ```
 
@@ -147,7 +147,7 @@ _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=val
 3. User-Agent can be found using [WhatIsMyBrowser](https://www.whatismybrowser.com/detect/what-is-my-user-agent/), now run with `-cookies` and `-user-agent`:
 
     ```bash
-    $ ./chatubrate-dvr -u yamiodymel \
+    $ ./chaturbate-dvr -u yamiodymel \
         -cookies "cf_clearance=PASTE_YOUR_CF_CLEARANCE_HERE" \
         -user-agent "PASTE_YOUR_USER_AGENT_HERE"
     ```
@@ -155,7 +155,7 @@ _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=val
     Example:
 
     ```bash
-    $ ./chatubrate-dvr -u yamiodymel \
+    $ ./chaturbate-dvr -u yamiodymel \
         -cookies "cf_clearance=i975JyJSMZUuEj2kIqfaClPB2dLomx3.iYo6RO1IIRg-1746019135-1.2.1.1-2CX..." \
         -user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
     ```
@@ -171,7 +171,7 @@ _Note: Use semicolons to separate multiple cookies, e.g., `key1=value1; key2=val
 3. Run with `-cookies`:
 
     ```bash
-    $ ./chatubrate-dvr -u yamiodymel -cookies "sessionid=PASTE_YOUR_SESSIONID_HERE"
+    $ ./chaturbate-dvr -u yamiodymel -cookies "sessionid=PASTE_YOUR_SESSIONID_HERE"
     ```
 
 &nbsp;
