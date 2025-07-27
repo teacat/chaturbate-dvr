@@ -43,7 +43,7 @@ func CreateChannel(c *gin.Context) {
 		return
 	}
 
-	for _, username := range strings.Split(req.Username, ",") {
+	for i, username := range strings.Split(req.Username, ",") {
 		server.Manager.CreateChannel(&entity.ChannelConfig{
 			IsPaused:    false,
 			Username:    username,
@@ -53,7 +53,7 @@ func CreateChannel(c *gin.Context) {
 			MaxDuration: req.MaxDuration,
 			MaxFilesize: req.MaxFilesize,
 			CreatedAt:   time.Now().Unix(),
-		}, true)
+		}, true, i)
 	}
 	c.Redirect(http.StatusFound, "/")
 }

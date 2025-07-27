@@ -141,7 +141,7 @@ func start(c *cli.Context) error {
 		Pattern:     c.String("pattern"),
 		MaxDuration: c.Int("max-duration"),
 		MaxFilesize: c.Int("max-filesize"),
-	}, false); err != nil {
+	}, false, 0); err != nil {
 		return fmt.Errorf("create channel: %w", err)
 	}
 
