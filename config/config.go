@@ -15,7 +15,7 @@ func New(c *cli.Context) (*entity.Config, error) {
 		Framerate:     c.Int("framerate"),
 		Resolution:    c.Int("resolution"),
 		Pattern:       c.String("pattern"),
-		MaxDuration:   c.Int("max-duration") * 60,
+		MaxDuration:   c.Int("max-duration"),
 		MaxFilesize:   c.Int("max-filesize"),
 		Port:          c.String("port"),
 		Interval:      c.Int("interval"),
