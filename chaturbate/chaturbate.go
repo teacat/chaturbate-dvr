@@ -144,7 +144,7 @@ func PickPlaylist(masterPlaylist *m3u8.MasterPlaylist, baseURL string, resolutio
 			return nil, fmt.Errorf("parse resolution: %w", err)
 		}
 		framerateVal := 30
-		if strings.Contains(v.Name, "FPS:60.0") {
+		if strings.Contains(v.Name, "FPS:60.0") && framerate == 60 {
 			framerateVal = 60
 		}
 		if _, exists := resolutions[width]; !exists {
