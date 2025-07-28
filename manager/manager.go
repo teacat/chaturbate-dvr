@@ -45,7 +45,7 @@ func (m *Manager) SaveConfig() error {
 		return true
 	})
 
-	b, err := json.Marshal(config)
+	b, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)
 	}
