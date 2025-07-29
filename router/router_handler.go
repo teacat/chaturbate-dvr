@@ -53,8 +53,13 @@ func CreateChannel(c *gin.Context) {
 			MaxDuration: req.MaxDuration,
 			MaxFilesize: req.MaxFilesize,
 			CreatedAt:   time.Now().Unix(),
-		}, true, i)
+		}, false, i)
 	}
+
+	if err := server.Manager.SaveConfig(); err != nil {
+		c.String(http.StatusInternalServerError, "Failed to save config: %v", err)
+	}
+
 	c.Redirect(http.StatusFound, "/")
 }
 
