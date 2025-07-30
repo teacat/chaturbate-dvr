@@ -9,7 +9,7 @@ import (
 var Manager IManager
 
 type IManager interface {
-	CreateChannel(conf *entity.ChannelConfig, shouldSave bool) error
+	CreateChannel(conf *entity.ChannelConfig, shouldSave bool, seq int) error
 	StopChannel(username string) error
 	PauseChannel(username string) error
 	ResumeChannel(username string) error
